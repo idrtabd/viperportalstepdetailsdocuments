@@ -92,11 +92,28 @@ export const CreateSPListItemGeneric = (listName, data) => {
     })
 }
 
+
+export const DeleteSPFile = async (sourcePath) => {
+    return new Promise(async (resolve, reject) => {
+        const requestDigest = await GetRequestDigestVal()
+        await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(%27${sourcePath}%27)`
+            , {
+                "method": "DELETE",
+                "headers": {
+                    "Content-Type": "application/json",
+                    "accept": "application/json;odata=verbose",
+                    "X-RequestDigest": requestDigest
+                },
+                "body": null
+            })
+        resolve()
+    })
+}
 export const CopySPFile = async (sourcePath, destPath, shouldOverwrite) => {
     return new Promise(async (resolve, reject) => {
         const requestDigest = await GetRequestDigestVal()
 
-        const overwriteVal = shouldOverwrite ? "true": "false"
+        const overwriteVal = shouldOverwrite ? "true" : "false"
         const copyResults = await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(%27${sourcePath}%27)/copyTo(strNewUrl=%27${destPath}%27,bOverWrite=${overwriteVal})`
             , {
                 "method": "POST",
@@ -118,8 +135,8 @@ export const CopySPFile = async (sourcePath, destPath, shouldOverwrite) => {
 
             resolve({
                 sourceSPItem: fileInfoJsonSource
-                ,destinationSPItem: fileInfoJsonDest
-            }) 
+                , destinationSPItem: fileInfoJsonDest
+            })
         }
     })
 }
