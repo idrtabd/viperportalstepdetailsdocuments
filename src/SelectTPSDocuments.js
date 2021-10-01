@@ -37,11 +37,10 @@ import DxGrid from 'devextreme/ui/data_grid'
 
 import notify from "devextreme/ui/notify";
 import StepDocumentsExecuteView from './StepDocumentsExecuteView';
-import SelectTPSDocument from './SelectTPSDocuments';
 
-function App({ tpsid, stepid, paramExecutionid, viewPage }) {
+export default function SelectTPSDocument({ DocumentSetFiles, tpsid, stepid, executionId, IsReadOnly }) {
 
-  const [DocumentSetFiles, SetDocumentSetFiles] = useState([]);
+  // const [DocumentSetFiles, SetDocumentSetFiles] = useState([]);
   const [SelectedItemKeys, SetSelectedItemKeys] = useState([]);
   const [SelectedItems, SetSelectedItems] = useState([]);
   const [ExistingTpsStepDocuments, SetExistingTpsStepDocuments] = useState([]);
@@ -52,7 +51,6 @@ function App({ tpsid, stepid, paramExecutionid, viewPage }) {
 
   const [currentUser, setCurrentUser] = useState();
   const [currentUserGroups, setCurrentUserGroups] = useState([]);
-  const [IsReadOnly, SetIsReadOnly] = useState(true);
   const [tpsReadOnlyState, settpsReadOnlyState] = useState("not set");
 
 
@@ -65,84 +63,12 @@ function App({ tpsid, stepid, paramExecutionid, viewPage }) {
 
   let history = useHistory();
   useEffect(() => {
-    CalcIsReacOnly();
-    if (viewPage === "StepExecution" && location.pathname !== "/StepExecution") {
-      history.push("/StepExecution")
-    } else if (viewPage === "SelectTPSDocuments" && location.pathname !== "/SelectTPSDocuments") {
-      history.push("/SelectTPSDocuments")
-    }
-    else {
-
-      runConfig = window['runConfig']
-      loadTpsAndDocuments()
-    }
-
   }, []);
-
-  useEffect(() => {
-    CalcIsReacOnly();
-  }, [TPSData]);
 
   const GetGridInstance = () => {
     let element = document.getElementById(GridId);
     const instance = DxGrid.getInstance(element);
     return instance;
-  }
-
-  const loadTpsAndDocuments = async () => {
-    const tpsExecution = await LoadTPSExecutionLatest()
-    SetExecutionData(tpsExecution)
-    LoadTPSStep();
-    const tpsItem = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27Draft - TPS%27)/Items(${tpsid})`, true)
-    SetTPSData(tpsItem)
-    const templateFiles = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFolderByServerRelativeUrl('/projects/Viper/ETPS/TPSDocumentTemplates/${tpsItem.Document_x0020_No}')?%24expand=Folders,Files`)
-
-    await LoadListItemAllFieldsFromTemplateFiles(templateFiles && templateFiles.Files && templateFiles.Files.results);
-    const allWorkingDocuments = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27TPSStepDocuments%27)/items?%24filter=TPSId%20eq%20${tpsid} and TPSExecutionId eq ${paramExecutionid}&%24top=5000&$expand=TPSStep,TPSExecution&$select=*,TPSStep/Step,TPSExecution/Title`)
-
-
-    templateFiles && templateFiles.Files && templateFiles.Files.results.forEach(x => {
-      x.Id = x.ListItemAllFields.Id
-      x.AssignmentStatus = ""
-      x.WorkingDocuments = allWorkingDocuments.filter(w => w.TPSDocumentTemplateId === x.Id)
-      x.StepDocuments = x.WorkingDocuments.filter(w => w.WorkingDocumentType === "Step")
-      x.TPSExecutionDocuments = x.WorkingDocuments.filter(w => w.WorkingDocumentType === "TPSExecution")
-      x.HasStepDocuments = x.StepDocuments && x.StepDocuments.length > 0
-      x.HasTPSExecutionDocuments = x.TPSExecutionDocuments && x.TPSExecutionDocuments.length > 0
-      x.TPSExecutionDocumentsSummary = x.TPSExecutionDocuments.map(x=>x.TPSExecution.Title).join(",  ")
-      x.StepDocumentsSummary = x.StepDocuments.map(x=>x.TPSStep.Step).sort().join(",  ")
-
-    })
-    SetDocumentSetFiles(templateFiles && templateFiles.Files && templateFiles.Files.results)
-    LoadExistingFileRefsFromTPSStepDocuments(templateFiles.Files.results, tpsExecution.Id)
-  }
-
-  const CalcIsReacOnly = async () => {
-    const usr = await GetCurrentUser();
-    const userGroups = await GetUsersGroups(usr.Id)
-    let tempTpsReadOnlyState = ""
-    setCurrentUserGroups(userGroups)
-    setCurrentUser(usr)
-    const foundEditorGroup = currentUserGroups.find(x => x.Title === ETPS_Editor_GroupId)
-
-    if (TPSData.TPS_x0020_Status === ETPS_Tps_Status_Accepted || TPSData.TPS_x0020_Status === ETPS_Tps_Status_Closed) {
-      // settpsReadOnlyState("readonly")
-      tempTpsReadOnlyState = "readonly"
-    } else if (usr && usr.Id === TPSData.EditorId) {
-      // settpsReadOnlyState("open")
-      tempTpsReadOnlyState = "open"
-    } else if (foundEditorGroup) {
-      tempTpsReadOnlyState = "open"
-    }
-    settpsReadOnlyState(tempTpsReadOnlyState)
-    SetIsReadOnly(tempTpsReadOnlyState != "open")
-
-  }
-
-  const LoadTPSExecutionLatest = () => {
-
-    return loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/lists/GetByTitle(%27TPS%20Executions%27)/items?%24filter=TPSLookupId eq ${tpsid}&%24orderby=ID desc&%24top=1`, true)
-
   }
 
   //get existing items to pre-set checkboxes
@@ -176,51 +102,51 @@ function App({ tpsid, stepid, paramExecutionid, viewPage }) {
       currentSelectedRowKeys.forEach(x => {
 
 
-        try {
+        try{
 
+        
+        const sel = DocumentSetFiles.find(d => d.Id === x)
+        const fileextension = sel.Name.substring(sel.Name.lastIndexOf("."))
+        const fileNameNoExtension = sel.Name.substring(0, sel.Name.lastIndexOf("."))
 
-          const sel = DocumentSetFiles.find(d => d.Id === x)
-          const fileextension = sel.Name.substring(sel.Name.lastIndexOf("."))
-          const fileNameNoExtension = sel.Name.substring(0, sel.Name.lastIndexOf("."))
+        //const newFileName = `${fileNameNoExtension}${fileextension}`
+         const newFileName = `${fileNameNoExtension}  [${ExecutionData.Title}.${(TPSStepData.Step + "").padStart(3, '0')}]${fileextension}`
+        const destinationPath = `/projects/Viper/ETPS/TPSStepDocuments/${newFileName}`
 
-          //const newFileName = `${fileNameNoExtension}${fileextension}`
-          const newFileName = `${fileNameNoExtension}  [${ExecutionData.Title}.${(TPSStepData.Step + "").padStart(3, '0')}]${fileextension}`
-          const destinationPath = `/projects/Viper/ETPS/TPSStepDocuments/${newFileName}`
+        CopySPFile(sel.ServerRelativeUrl, destinationPath)
+          .then(({ sourceSPItem, destinationSPItem }) => {
+            notify(`${sel.Name} copied to ${TPSData && TPSData.Document_x0020_No} documents`, "success", 5000)
 
-          CopySPFile(sel.ServerRelativeUrl, destinationPath)
-            .then(({ sourceSPItem, destinationSPItem }) => {
-              notify(`${sel.Name} copied to ${TPSData && TPSData.Document_x0020_No} documents`, "success", 5000)
-
-              UpdateSPListItemGeneric("TPSStepDocuments", {
-                Id: destinationSPItem.ListItemAllFields.Id
-                , TPSDocumentTemplateId: sourceSPItem.ListItemAllFields.Id
-                , TPSId: tpsid
-                , TPSStepId: stepid
-                , TPSExecutionId: ExecutionData && ExecutionData.Id
-                , Title: sourceSPItem.ListItemAllFields.Title
-              }).then(itemUpdate => {
-                notify(`${sel.Name} Fields Set - ${TPSData && TPSData.Document_x0020_No} - ${newFileName}`, "success", 5000)
-                let temp = [...ExistingTpsStepDocuments];
-                temp.push(itemUpdate)
-                SetExistingTpsStepDocuments(temp)
-                resolve()
-              })
-                .catch(err => {
-
-                  reject(err)
-                  notify(`Error ${JSON.stringify(err)}`, "error", 5000)
-                  throw err
-                })
-
+            UpdateSPListItemGeneric("TPSStepDocuments", {
+              Id: destinationSPItem.ListItemAllFields.Id
+              , TPSDocumentTemplateId: sourceSPItem.ListItemAllFields.Id
+              , TPSId: tpsid
+              , TPSStepId: stepid
+              , TPSExecutionId: ExecutionData && ExecutionData.Id
+              , Title: sourceSPItem.ListItemAllFields.Title
+            }).then(itemUpdate => {
+              notify(`${sel.Name} Fields Set - ${TPSData && TPSData.Document_x0020_No} - ${newFileName}`, "success", 5000)
+              let temp = [...ExistingTpsStepDocuments];
+              temp.push(itemUpdate)
+              SetExistingTpsStepDocuments(temp)
+              resolve()
             })
             .catch(err => {
-              notify(`Error ${JSON.stringify(err)}`, "error", 5000)
+
               reject(err)
+              notify(`Error ${JSON.stringify(err)}`, "error", 5000)
+              throw err
             })
 
-        } catch (err) {
+          })
+          .catch(err => {
+            notify(`Error ${JSON.stringify(err)}`, "error", 5000)
+            reject(err)
+          })
+
+        }catch(err){
           notify(`Error ${JSON.stringify(err)}`, "error", 5000)
-          reject(err)
+            reject(err)
         }
       })
 
@@ -265,28 +191,28 @@ function App({ tpsid, stepid, paramExecutionid, viewPage }) {
 
     const tempSelectedKeys = [...SelectedItemKeys]
     SetSelectedItemKeys(e.selectedRowsData.map(x => x.Id))
-
-    try {
+    
+    try{
 
       if (e.currentSelectedRowKeys.length === 1) {
-
+        
         await ProcessAddFileItems(e.currentSelectedRowKeys)
-      } else if (e.currentSelectedRowKeys.length > 1) {
+      }else if (e.currentSelectedRowKeys.length > 1){
         SetSelectedItemKeys(tempSelectedKeys)
       }
       if (e.currentDeselectedRowKeys.length === 1) {
         await ProcessRemoveFileItems(e.currentDeselectedRowKeys)
-      } else if (e.currentDeselectedRowKeys.length > 1) {
+      }else if (e.currentDeselectedRowKeys.length > 1){
         SetSelectedItemKeys(tempSelectedKeys)
       }
-    } catch (err) {
+    }catch(err){
       SetSelectedItemKeys(tempSelectedKeys)
-    } finally {
+    }finally{
       GetGridInstance().endCustomLoading()
       SetGridStateEnabled(true)
 
     }
-
+    
   }
 
 
@@ -346,7 +272,7 @@ function App({ tpsid, stepid, paramExecutionid, viewPage }) {
         >
           <LoadPanel enabled={true} showIndicator={true} />
           <ColumnChooser enabled={true} />
-          <Selection mode={IsReadOnly ? "none" : "multiple"} allowSelectAll={false} />
+          <Selection mode={IsReadOnly ? "none" : "multiple"} allowSelectAll={false}/>
           <Scrolling mode="virtual" />
           <FilterRow visible={true} />
           <GroupPanel visible={false} />
@@ -354,6 +280,8 @@ function App({ tpsid, stepid, paramExecutionid, viewPage }) {
           <Column dataField="Id" visible={true} />
           <Column dataField="Name" cellRender={CellRenderDocName} />
           <Column dataField="Title" />
+          <Column dataField="TPSExecutionDocumentsSummary" />
+          <Column dataField="StepDocumentsSummary" />
           <Column dataField="TimeLastModified" caption="Modified" dataType="date" format="shortDate" />
           <Column dataField="UIVersionLabel" caption="Version" />
 
@@ -375,42 +303,10 @@ function App({ tpsid, stepid, paramExecutionid, viewPage }) {
 
   return (
     <React.Fragment>
-      <Router>
-        <Switch>
-          <Route path="/StepExecution">
-            <StepDocumentsExecuteView
-             
-              executionId={paramExecutionid}
-              stepid={stepid}
-              tpsid={tpsid}
-              IsReadOnly={IsReadOnly}
-            />
-          </Route>
-          <Route path="/SelectTPSDocuments">
-            <SelectTPSDocument
-             DocumentSetFiles={DocumentSetFiles}
-              executionId={paramExecutionid}
-              stepid={stepid}
-              tpsid={tpsid}
-              IsReadOnly={IsReadOnly}
-            />
-          </Route>
-          {/* <Route path="/NotesEditor">
-            <StepExecutionNotesEditor notesText="fdf dfjdkslafjdsal;f jdasfldjafk;"/>
-          </Route> */}
-          <Route path="/">
-            <React.Fragment>
               {GetSummaryInstructions()}
               {GetDataGrid()}
-            </React.Fragment>
-            {/* No Route Selected use #/PartsPage or #/GSEPage for example */}
-          </Route>
-        </Switch>
-      </Router>
     </React.Fragment>
 
 
   );
 }
-
-export default App;

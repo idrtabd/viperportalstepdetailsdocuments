@@ -114,7 +114,9 @@ export const CopySPFile = async (sourcePath, destPath, shouldOverwrite) => {
         const requestDigest = await GetRequestDigestVal()
 
         const overwriteVal = shouldOverwrite ? "true" : "false"
-        const copyResults = await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(%27${sourcePath}%27)/copyTo(strNewUrl=%27${destPath}%27,bOverWrite=${overwriteVal})`
+        // const copyResults = await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(%27${sourcePath}%27)/copyTo(strNewUrl=%27${destPath}%27,bOverWrite=${overwriteVal})`
+        const url = REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(@s)/copyTo(strNewUrl=@d,bOverWrite=true)?@s='${sourcePath}'&@d='${destPath}'`
+        const copyResults = await fetch(url
             , {
                 "method": "POST",
                 "headers": {
@@ -152,7 +154,13 @@ export const UpdateSPListItemGeneric = (listName, data) => {
                     .then(result => {
                         resolve(result)
                     })
-            });
+                    .catch(err=>{
+                        reject(err)
+                    })
+            })
+            .catch(err=>{
+                reject(err)
+            })
     })
 }
 export const UpSertSPListItemGeneric = (listName, data, Id) => {

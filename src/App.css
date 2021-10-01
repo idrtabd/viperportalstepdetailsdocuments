@@ -676,3 +676,18 @@
     margin-bottom: .9em;
     /* padding-bottom: .8em; */
 }
+
+.instructionText{
+	padding-top: 1em;
+}
+
+.amplifiedhref{
+	font-size: larger;
+	padding-left: .4em;
+	padding-right: .4em;
+	color: darkblue;
+	font-weight: 600;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	text-transform: uppercase;
+	
+}
