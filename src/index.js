@@ -1,25 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from "react";
+import ReactDOM from "react-dom";
+import { render } from "react-dom";
+import App from "./App";
 import { BrowserRouter, HashRouter, Switch, Route } from "react-router-dom";
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-
-function loadMyReactComponent() {
-  document.querySelectorAll(".renderReactStepDetailsDocuments").forEach(domContainer => {
-    const dataParamtpsId = domContainer.dataset.tpsid
-    const dataParamstepId = domContainer.dataset.stepid
-    const dataParamexecutionid = domContainer.dataset.executionid
-    const dataParamviewpage = domContainer.dataset.viewpage
-    ReactDOM.render(
-      <HashRouter>
-        <App stepid={dataParamstepId} tpsid={dataParamtpsId} paramExecutionid={dataParamexecutionid} viewPage={dataParamviewpage} />
-      </HashRouter>, domContainer
-    )
-  })
-}
-
-window.addEventListener("DOMContentLoaded", (event) => {
-  loadMyReactComponent();
-})
-
+import Store from "./Store";
+const Index = () => {
+  return (
+    <React.Fragment>
+      <div className="mainPanel">
+        <Store>
+          <HashRouter>
+              <App />
+          </HashRouter>
+        </Store>
+      </div>
+    </React.Fragment>
+  );
+};
+render(<Index />, document.getElementById("root"));
