@@ -2,56 +2,31 @@ import 'devextreme/dist/css/dx.common.css';
 import 'devextreme/dist/css/dx.light.css';
 import './App.css';
 import React, { useState, useEffect, useContext } from "react";
-import List, { ItemDragging } from 'devextreme-react/list';
-import DropDownBox from 'devextreme-react/drop-down-box';
 import SelectBox from 'devextreme-react/select-box';
 // import { Button as DxReactButton } from "devextreme-react/button";
 import { Button } from 'devextreme-react/button';
 import DataGrid, {
-    LoadPanel,
-    GroupPanel,
     Column,
     SearchPanel,
-    RowDragging,
     Selection,
-    FilterRow,
-    Scrolling,
     ColumnChooser,
-    ColumnHeaderFilter,
-    Editing
 } from "devextreme-react/data-grid";
 import notify from "devextreme/ui/notify";
-import DxGrid from 'devextreme/ui/data_grid'
 import {
     REACT_APP_RESTURL_SPWEBURL,
     loadSpRestCall,
     UpdateSPListItemGeneric,
-    UpSertSPListItemGeneric,
-    RemoveSPListItemGeneric,
-    CreateSPListItemGeneric,
-    GetCurrentUser,
-    JoinSPData,
-    hostUrl,
-    CopySPFile,
-    DeleteSPFile,
-    GetUsersGroups,
-    ETPS_Editor_GroupId,
-    ETPS_Tps_Status_Accepted,
-    ETPS_Tps_Status_Closed,
 } from "./MyUtils"
 import { Accordion, Item } from 'devextreme-react/accordion';
 
-// import { Button } from 'devextreme-react/button';
-// import notify from "devextreme/ui/notify";
+export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, SetDirtyCallback, RemoveItemOnUnselect }) {
 
-export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, SetDirtyCallback }) {
-
+    const [TemplateDocs, SetTemplateDocs] = useState([]);
     const [TPSDocumentTemplateData, SetTPSDocumentTemplateData] = useState();
     const [TPSDocumentTemplateDataNotFiltered, SetTPSDocumentTemplateDataNotFiltered] = useState();
     const [ItemsSelectedInOtherCategoryData, SetItemsSelectedInOtherCategoryData] = useState([]);
     const [TpsDocumentNumber, SetTpsDocumentNumber] = useState();
     const [DocAllocData, SetDocAllocData] = useState();
-    const [TemplateDocs, SetTemplateDocs] = useState([]);
     const [ExecutionsData, SetExecutionsData] = useState([]);
     const [SelectedRowKeysData, SetSelectedRowKeysData] = useState([]);
     const [AllStepsData, SetAllStepsData] = useState([]);
@@ -199,9 +174,19 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         }
         //Process Removed Items
         currentDeselectedRowKeys.forEach(x => {
-            const existsItemIndex = tempDocAllocData.findIndex(d => d.Id === x && d.Type == allocationType)
-            if (existsItemIndex >= 0) {
-                tempDocAllocData.splice(existsItemIndex, 1)
+
+            if(RemoveItemOnUnselect){
+
+                const existsItemIndex = tempDocAllocData.findIndex(d => d.Id === x && d.Type == allocationType)
+                if (existsItemIndex >= 0) {
+                    tempDocAllocData.splice(existsItemIndex, 1)
+                }
+            }else if(IsAllocationTypeStep){
+                const otherCategoryKey = IsAllocationTypeStep ? "TPS" : "Step";
+                const itemRemoved = tempDocAllocData.find(d => d.Id === x && d.Type == allocationType)
+                itemRemoved.Type = otherCategoryKey;
+            }else{
+                console.error("No case for not RemoveItemOnUnselect and not IsAllocationTypeStep")
             }
         })
 
@@ -241,10 +226,6 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
     const StepSelectBoxValueChanged = (e) => {
         const SelectedStep = AllStepsData.find(x => x.Id === e.value)
         SetSelectedStepData(SelectedStep);
-    }
-
-    const TemplateDocsOnEditorPreparing = (e) => {
-
     }
 
     const GetStepDropDownComponent = () => {
@@ -333,8 +314,6 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
                         id="TPSDocumentAssignmentGrid"
                         selectedRowKeys={SelectedRowKeysData}
                         keyExpr="Id"
-                        onEditorPreparing={TemplateDocsOnEditorPreparing}
-
                     >
                         <Selection mode="multiple" />
                         <SearchPanel visible={true} />

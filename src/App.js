@@ -127,7 +127,7 @@ function App() {
     }
   }
 
-  if(!TpsIdParam){
+  if (!TpsIdParam) {
     return (<div>Missing TPSId Query String Parameter</div>)
   }
   return (
@@ -158,28 +158,18 @@ function App() {
 
           <Route path="/">
             {/* <StepSelecector tpsid="340"/> */}
-            {TPSKey} - {StepsKey}
-            <Accordion
-              collapsible={true}
-              multiple={false}
-              animationDuration={500}
-              onContentReady={accordionContentReady}
-            >
-              <Item title="Assign Template Documents To TPS">
-                <div className="dvoGridPanel">
-                  {/* <TPSDocumentAssignment key={TPSKey} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} /> */}
-                  <AutoAssignTPSDocumentAssignment key={TPSKey} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} />
-                </div>
-              </Item>
-              <Item title="Assign Template Documents To Steps">
-                <div className="dvoGridPanel Alternate">
-                  <TPSDocumentAssignment key={StepsKey} tpsid={TpsIdParam} IsAllocationTypeStep={true} SetDirtyCallback={() => SetDirtyCallback("Step")} />
-                </div>
-              </Item>
-              <Item title="Summary" >
-                <DocumentSummary tpsid={TpsIdParam} />
-              </Item>
-            </Accordion>
+            {/* {TPSKey} - {StepsKey} */}
+              {/* <AutoAssignTPSDocumentAssignment key={TPSKey} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} /> */}
+            <div className="dvoGridPanel">
+              <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} />
+
+
+              <div className="dvoGridPanel Alternate">
+                <TPSDocumentAssignment key={StepsKey} tpsid={TpsIdParam} RemoveItemOnUnselect={true} IsAllocationTypeStep={true} SetDirtyCallback={() => SetDirtyCallback("Step")} />
+              </div>
+
+              <div><DocumentSummary tpsid={TpsIdParam} /></div>
+            </div>
 
           </Route>
         </Switch>
