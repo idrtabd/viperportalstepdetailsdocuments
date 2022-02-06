@@ -22,12 +22,14 @@ import {
     ETPS_Tps_Status_Accepted,
     ETPS_Tps_Status_Closed,
 } from "./MyUtils"
+import dxButton from 'devextreme/ui/button';
 
 // import { Button } from 'devextreme-react/button';
 // import notify from "devextreme/ui/notify";
 
-export default function DocumentSummary({ tpsid }) {
+export default function CreateDocumentsFromTemplate({ tpsid }) {
 
+    const [TemplateFolderData, SetTemplateFolderData] = useState();
     const [TpsDocumentNumber, SetTpsDocumentNumber] = useState();
     const [TemplateDocs, SetTemplateDocs] = useState([]);
     const [ExecutionsData, SetExecutionsData] = useState([]);
@@ -43,7 +45,9 @@ export default function DocumentSummary({ tpsid }) {
         const queryTemplateFolder = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27TPSDocumentTemplates%27)/items?`
             + `%24expand=Folder&%24select=Folder%2FName,Folder%2FItemCount,DocAllocData,Id,TPSReference0Id&%24filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0120')`
         const templateFolderResult = await loadSpRestCall(queryTemplateFolder, true);
-        const folderName_tpsDocumentNumber =  templateFolderResult &&  templateFolderResult.Folder && templateFolderResult.Folder.Name;
+        SetTemplateFolderData(templateFolderResult);
+
+        const folderName_tpsDocumentNumber = templateFolderResult && templateFolderResult.Folder && templateFolderResult.Folder.Name;
         SetTpsDocumentNumber(folderName_tpsDocumentNumber)
 
         // const queryTemplateDocs = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27TPSDocumentTemplates%27)/items?%24filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0101')&%24expand=File&%24select=File,*`
@@ -65,36 +69,21 @@ export default function DocumentSummary({ tpsid }) {
 
     }
 
+    const CreateDocumentsClicked = () => {
+
+    }
 
     return (
         <>
-            <h4>{TpsDocumentNumber} Summary</h4>
+            <h4>{TpsDocumentNumber} Create Documents From Template</h4>
             <div className="Panel Alternate">
-                <h5>Template Documents</h5>
-                {TemplateDocs && TemplateDocs.map(x =>
-                    <div key={x.ListItemAllFields.Id}>
-                        {x.Name} - {x.UIVersionLabel}
-                    </div>
-                )}
+                <Button text="Create Documents"
+                    type="default"
+                    stylingMode="contained"
+                    onClick={CreateDocumentsClicked}
+                />
             </div>
-
-            <div className="Panel Alternate">
-                <h5>Documents Assigned to TPS</h5>
-                <div>TBD</div>
-            </div>
-            <div className="Panel Alternate">
-                <h5>Documents Assigned to Steps</h5>
-                <div>TBD</div>
-            </div>
-
-            <div className="Panel Alternate">
-                <h5>Working Documents by Execution</h5>
-                {ExecutionsData.map(x =>
-                    <div key={x.Id}>
-                        {x.Title}: TBD
-                    </div>
-                )}
-            </div>
+            <div>{ TemplateFolderData && TemplateFolderData.DocAllocData && JSON.stringify(TemplateFolderData.DocAllocData)}</div>
         </>
     )
 }

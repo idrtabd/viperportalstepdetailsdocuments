@@ -44,6 +44,7 @@ import DocumentSummary from './DocumentSummary';
 import TPSDocumentAssignment from './TPSDocumentAssignment';
 import { Accordion, Item } from 'devextreme-react/accordion';
 import AutoAssignTPSDocumentAssignment from './AutoAssignTPSDocumentAssignment';
+import CreateDocumentsFromTemplate from './CreateDocumentsFromTemplate';
 
 // function App({ tpsid, stepid, paramExecutionid, viewPage }) {
 function App() {
@@ -159,8 +160,12 @@ function App() {
           <Route path="/">
             {/* <StepSelecector tpsid="340"/> */}
             {/* {TPSKey} - {StepsKey} */}
-              {/* <AutoAssignTPSDocumentAssignment key={TPSKey} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} /> */}
             <div className="dvoGridPanel">
+              <div>
+             
+             {/* <AutoAssignTPSDocumentAssignment key={TPSKey} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} /> */}
+             
+              </div>
               <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} />
 
 
@@ -169,6 +174,8 @@ function App() {
               </div>
 
               <div><DocumentSummary tpsid={TpsIdParam} /></div>
+
+
             </div>
 
           </Route>

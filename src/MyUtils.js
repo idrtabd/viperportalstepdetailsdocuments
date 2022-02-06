@@ -268,7 +268,7 @@ export const loadSpRestCall = (requestUrl, isSingle, isNotList) => {
                     resolve(data)
                 }
                 else if (isSingle) {
-                    if (data.d.results && data.d.results[0]) {
+                    if (data.d.results && data.d.results.length && data.d.results[0]) {
                         resolve(data.d.results && data.d.results[0]);
                     } else if (data.d && data.d.__metadata) {
                         resolve(data.d)

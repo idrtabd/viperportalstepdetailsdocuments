@@ -61,8 +61,8 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         const allStepsResult =
             await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27Draft - TPS Steps%27)/Items?%24select=Id,Step_x0020_Procedure,Step&%24orderby=Step&%24filter=TPSLookupId eq ${tpsid}`)
         allStepsResult.forEach(x => x.Title = `${x.Step} - ${x.Step_x0020_Procedure}`)
-        SetDefaultSelectedStepKey(allStepsResult && allStepsResult[0].Id)
-        SetSelectedStepData(AllStepsData && allStepsResult[0])
+        SetDefaultSelectedStepKey(allStepsResult && allStepsResult.length && allStepsResult[0].Id)
+        SetSelectedStepData(AllStepsData && allStepsResult.length && allStepsResult[0])
         SetAllStepsData(allStepsResult);
 
         // debugger
@@ -72,14 +72,14 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         SetTPSDocumentTemplateData(templateFolderResult);
 
         let alocDataParsed = []
-        if (templateFolderResult.DocAllocData && templateFolderResult != "") {
+        if (templateFolderResult && templateFolderResult.DocAllocData) {
             alocDataParsed = JSON.parse(templateFolderResult.DocAllocData)
             SetSelectedRowKeysData(alocDataParsed.map(x => x.Id))
             SetDocAllocData(alocDataParsed)
         } else {
             SetDocAllocData([]);
         }
-        SetTpsDocumentNumber(templateFolderResult.Folder.Name)
+        SetTpsDocumentNumber(templateFolderResult && templateFolderResult.Folder && templateFolderResult.Folder.Name)
 
         //DocAllocData
         const queryAllTemplateDocuments =
