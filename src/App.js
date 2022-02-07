@@ -43,7 +43,6 @@ import StepSelecector from './StepSelector';
 import DocumentSummary from './DocumentSummary';
 import TPSDocumentAssignment from './TPSDocumentAssignment';
 import { Accordion, Item } from 'devextreme-react/accordion';
-import AutoAssignTPSDocumentAssignment from './AutoAssignTPSDocumentAssignment';
 import CreateDocumentsFromTemplate from './CreateDocumentsFromTemplate';
 
 // function App({ tpsid, stepid, paramExecutionid, viewPage }) {
@@ -65,6 +64,7 @@ function App() {
 
 
   const [TpsIdParam, SetTpsIdParam] = useState();
+  const [TpsExeIDParam, SetTpsExeIDParam] = useState();
   const [StepsKey, SetStepsKey] = useState(1);
   const [TPSKey, SetTPSKey] = useState(1);
 
@@ -76,49 +76,9 @@ function App() {
 
   let history = useHistory();
   useEffect(() => {
-    // SetNavigation()
-    const tpsidparam = getQueryStringParameterByName("TpsID")
-    SetTpsIdParam(tpsidparam);
+    SetTpsIdParam(getQueryStringParameterByName("TpsID"));
+    SetTpsExeIDParam(getQueryStringParameterByName("TpsExeID"));
   }, []);
-
-  // useEffect(() => {
-  //   CalcIsReadOnly();
-  // }, [TPSData]);
-
-  // const CalcIsReadOnly = async () => {
-  //   const usr = await GetCurrentUser();
-  //   const userGroups = await GetUsersGroups(usr.Id)
-  //   let tempTpsReadOnlyState = ""
-  //   setCurrentUserGroups(userGroups)
-  //   setCurrentUser(usr)
-  //   const foundEditorGroup = currentUserGroups.find(x => x.Title === ETPS_Editor_GroupId)
-
-  //   if (TPSData.TPS_x0020_Status === ETPS_Tps_Status_Accepted || TPSData.TPS_x0020_Status === ETPS_Tps_Status_Closed) {
-  //     // settpsReadOnlyState("readonly")
-  //     tempTpsReadOnlyState = "readonly"
-  //   } else if (usr && usr.Id === TPSData.EditorId) {
-  //     // settpsReadOnlyState("open")
-  //     tempTpsReadOnlyState = "open"
-  //   } else if (foundEditorGroup) {
-  //     tempTpsReadOnlyState = "open"
-  //   }
-  //   settpsReadOnlyState(tempTpsReadOnlyState)
-  //   SetIsReadOnly(tempTpsReadOnlyState != "open")
-
-  // }
-
-  // const SetNavigation = () => {
-  //   if (viewPage === "StepExecution" && location.pathname !== "/StepExecution") {
-  //     history.push("/StepExecution")
-  //   } else if (viewPage === "SelectTPSDocuments" && location.pathname !== "/SelectTPSDocuments") {
-  //     history.push("/SelectTPSDocuments")
-  //   }
-  // }
-  const accordionContentReady = (e) => {
-    if (e.component.option().items.length > 0) {
-      //  e.component.collapseItem(0)
-    }
-  }
 
   const SetDirtyCallback = (e) => {
     if (e === "TPS") {
@@ -162,9 +122,7 @@ function App() {
             {/* {TPSKey} - {StepsKey} */}
             <div className="dvoGridPanel">
               <div>
-             
-             {/* <AutoAssignTPSDocumentAssignment key={TPSKey} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} /> */}
-             
+                <CreateDocumentsFromTemplate tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} targetLibraryServerRelUrl={'/projects/Viper/ETPS/TPSStepDocuments'} />
               </div>
               <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} />
 

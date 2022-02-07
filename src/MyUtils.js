@@ -18,7 +18,7 @@ export const hostUrl = "https://ea.sp.jsc.nasa.gov";
 export const REACT_APP_RESTURL_SPWEBURL = hostUrl + "/projects/Viper/ETPS";
 
 const REACT_APP_RESTURL_SITEUSERS = REACT_APP_RESTURL_SPWEBURL +
-    "/_api/web/SiteUserInfoList/items?%24filter=ContentTypeId%20eq%20'0x010A0074236F46CA27854788495BF1A9EEF8F0'%20and%20EMail%20gt%20''%20and%20startswith(Name,'i%3A0%23.w%7Cndc')&%24orderby=Title&%24select=Name,EMail,MobilePhone,Department,Office,JobTitle,Title,Id,WorkPhone&%24top=5000";
+    "/_api/web/SiteUserInfoList/items?$filter=ContentTypeId%20eq%20'0x010A0074236F46CA27854788495BF1A9EEF8F0'%20and%20EMail%20gt%20''%20and%20startswith(Name,'i%3A0%23.w%7Cndc')&$orderby=Title&$select=Name,EMail,MobilePhone,Department,Office,JobTitle,Title,Id,WorkPhone&$top=5000";
 
 const propName = f => /\.([^\.;]+);?\s*\}$/.exec(f.toString())[1]
 
@@ -37,7 +37,7 @@ export const GetFilterTypeOrString = (filterValuesArray) => {
 export const GetCurrentUserAndRoles = () => {
     return new Promise((resolve, reject) => {
 
-        loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/web/currentuser?%24expand=Groups&%24select=*,Groups%2FTitle`, true)
+        loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/web/currentuser?$expand=Groups&$select=*,Groups%2FTitle`, true)
             .then(u => {
                 let UserInfo = u;
                 UserInfo.Groups = u.Groups.results.map(g => g.Title)
@@ -50,21 +50,21 @@ export const GetCurrentUserAndRoles = () => {
 }
 
 export const PartsLoadAll = () => {
-    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('MEL')/Items?%24top=5000&%24orderby=Title&$expand=ContentType,HardwareType&%24select=*,ContentType/Name,HardwareType/Title`)
+    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('MEL')/Items?$top=5000&$orderby=Title&$expand=ContentType,HardwareType&$select=*,ContentType/Name,HardwareType/Title`)
 }
 export const PartsLoadByTPS = (tpsId) => {
-    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27TPS%20Parts%27)/Items?%24top=5000&$expand=ContentType&%24select=*,ContentType/Name&%24orderby=Line&%24filter=TPSLookupId%20eq%20${tpsId}`)
+    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPS%20Parts')/Items?$top=5000&$expand=ContentType&$select=*,ContentType/Name&$orderby=Line&$filter=TPSLookupId%20eq%20${tpsId}`)
 }
 
 
 export const GSELoadAll = () => {
-    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27GSE%27)/Items?%24top=5000&%24orderby=Title`)
+    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('GSE')/Items?$top=5000&$orderby=Title`)
 }
 export const GetTpsData = (tpsid) => {
-    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27Draft%20-%20TPS%27)/Items(${tpsid})?%24select=*,HardwareType/Title,Author%2FTitle,Author%2FEMail,Author%2FName&%24expand=Author,HardwareType`)
+    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('Draft%20-%20TPS')/Items(${tpsid})?$select=*,HardwareType/Title,Author%2FTitle,Author%2FEMail,Author%2FName&$expand=Author,HardwareType`)
 }
 export const GSELoadByTps = (tpsid) => {
-    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27Draft%20-%20TPS%27)/Items(${tpsid})?%24select=GSEId,TPS_x0020_Status,AuthorId,Author%2FTitle,Author%2FEMail,Author%2FName&%24expand=Author`)
+    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('Draft%20-%20TPS')/Items(${tpsid})?$select=GSEId,TPS_x0020_Status,AuthorId,Author%2FTitle,Author%2FEMail,Author%2FName&$expand=Author`)
 }
 
 export const GetCurrentUser = () => {
@@ -72,7 +72,7 @@ export const GetCurrentUser = () => {
 }
 
 export const GetUsersGroups = (userid) => {
-    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/web/getuserbyid(${userid})/Groups?%24select=Title`)
+    return loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/web/getuserbyid(${userid})/Groups?$select=Title`)
 }
 
 
@@ -96,7 +96,7 @@ export const CreateSPListItemGeneric = (listName, data) => {
 export const DeleteSPFile = async (sourcePath) => {
     return new Promise(async (resolve, reject) => {
         const requestDigest = await GetRequestDigestVal()
-        await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(%27${sourcePath}%27)`
+        await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl('${sourcePath}')`
             , {
                 "method": "DELETE",
                 "headers": {
@@ -114,7 +114,7 @@ export const CopySPFile = async (sourcePath, destPath, shouldOverwrite) => {
         const requestDigest = await GetRequestDigestVal()
 
         const overwriteVal = shouldOverwrite ? "true" : "false"
-        // const copyResults = await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(%27${sourcePath}%27)/copyTo(strNewUrl=%27${destPath}%27,bOverWrite=${overwriteVal})`
+        // const copyResults = await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl('${sourcePath}')/copyTo(strNewUrl='${destPath}',bOverWrite=${overwriteVal})`
         const url = REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(@s)/copyTo(strNewUrl=@d,bOverWrite=true)?@s='${sourcePath}'&@d='${destPath}'`
         const copyResults = await fetch(url
             , {
@@ -132,12 +132,12 @@ export const CopySPFile = async (sourcePath, destPath, shouldOverwrite) => {
         } else {
 
             //get list item ID and list item data
-            const fileInfoJsonSource = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(%27${sourcePath}%27)?%24expand=ListItemAllFields`)
-            const fileInfoJsonDest = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(%27${destPath}%27)?%24expand=ListItemAllFields`)
+            const fileInfoJsonSource = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl('${sourcePath}')?$expand=ListItemAllFields`)
+            const fileInfoJsonDest = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl('${destPath}')?$expand=ListItemAllFields`)
 
             resolve({
                 sourceSPItem: fileInfoJsonSource
-                , destinationSPItem: fileInfoJsonDest
+                ,destinationSPItem: fileInfoJsonDest
             })
         }
     })
@@ -154,18 +154,18 @@ export const UpdateSPListItemGeneric = (listName, data) => {
                     .then(result => {
                         resolve(result)
                     })
-                    .catch(err=>{
+                    .catch(err => {
                         reject(err)
                     })
             })
-            .catch(err=>{
+            .catch(err => {
                 reject(err)
             })
     })
 }
 export const UpSertSPListItemGeneric = (listName, data, Id) => {
     return new Promise((resolve, reject) => {
-        loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}}/_api/Lists/GetByTitle('${listName}')/Items(${Id})?%24select=Id`, true)
+        loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}}/_api/Lists/GetByTitle('${listName}')/Items(${Id})?$select=Id`, true)
             .then(exists => {
                 if (exists && exists.Id) {
                     UpdateSPListItemGeneric(listName, data)
