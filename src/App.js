@@ -44,6 +44,7 @@ import DocumentSummary from './DocumentSummary';
 import TPSDocumentAssignment from './TPSDocumentAssignment';
 import { Accordion, Item } from 'devextreme-react/accordion';
 import CreateDocumentsFromTemplate from './CreateDocumentsFromTemplate';
+import TPSExecutionSummary from './TPSExecutionSummary';
 
 // function App({ tpsid, stepid, paramExecutionid, viewPage }) {
 function App() {
@@ -67,6 +68,7 @@ function App() {
   const [TpsExeIDParam, SetTpsExeIDParam] = useState();
   const [StepsKey, SetStepsKey] = useState(1);
   const [TPSKey, SetTPSKey] = useState(1);
+  const [TpsDocumementsRefreshedFlag, SetTpsDocumementsRefreshedFlag] = useState(1);
 
 
   const GridId = "DocumentSetFilesGrid"
@@ -86,6 +88,10 @@ function App() {
     } else if (e === "Step") {
       SetTPSKey(TPSKey + 1)
     }
+  }
+
+  const SetRefreshFlag = () => {
+    SetTpsDocumementsRefreshedFlag(TpsDocumementsRefreshedFlag + 1)
   }
 
   if (!TpsIdParam) {
@@ -117,28 +123,44 @@ function App() {
             <StepExecutionNotesEditor notesText="fdf dfjdkslafjdsal;f jdasfldjafk;"/>
           </Route> */}
 
+          <Route path="/ConfigureDocuments">
+            <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} />
+            <div className="dvoGridPanel Alternate">
+              <TPSDocumentAssignment key={StepsKey} tpsid={TpsIdParam} RemoveItemOnUnselect={true} IsAllocationTypeStep={true} SetDirtyCallback={() => SetDirtyCallback("Step")} />
+            </div>
+            <div><DocumentSummary tpsid={TpsIdParam} /></div>
+          </Route>
+
+
           <Route path="/">
-            {/* <StepSelecector tpsid="340"/> */}
-            {/* {TPSKey} - {StepsKey} */}
+            TpsDocumementsRefreshedFlag: {TpsDocumementsRefreshedFlag}
             <div className="dvoGridPanel">
-              <div>
-                <CreateDocumentsFromTemplate tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} targetLibraryServerRelUrl={'/projects/Viper/ETPS/TPSStepDocuments'} />
-              </div>
-              <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} />
-
-
-              <div className="dvoGridPanel Alternate">
-                <TPSDocumentAssignment key={StepsKey} tpsid={TpsIdParam} RemoveItemOnUnselect={true} IsAllocationTypeStep={true} SetDirtyCallback={() => SetDirtyCallback("Step")} />
-              </div>
-
-              <div><DocumentSummary tpsid={TpsIdParam} /></div>
-
-
+              <CreateDocumentsFromTemplate showOutput={true} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} targetLibraryServerRelUrl={'/projects/Viper/ETPS/TPSStepDocuments'} SetRefreshFlag={SetRefreshFlag} />
+              <TPSExecutionSummary tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} refreshFlag={TpsDocumementsRefreshedFlag} />
             </div>
 
           </Route>
         </Switch>
       </Router>
+
+
+      <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+            <span id="step2008StepNumber">
+                Test Step Test StepTest StepTest Step
+            </span>
+            <div>
+              f dfdafd afd as
+            </div>
+            <div>
+              f dfdafd afd as
+            </div>
+            <div>
+              f dfdafd afd as
+            </div>
+            <div>
+              f dfdafd afd as
+            </div>
+            
     </React.Fragment>
 
 

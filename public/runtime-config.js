@@ -1,8 +1,8 @@
 window['runConfig'] = {
     apiUrl: 'test.com/api'
-    ,spHostUrl: 'https://gateway.sp.iss.nasa.gov'
-    ,spSiteUrl: 'https://gateway.sp.iss.nasa.gov/sites/GatewayTVToolChain'
-    ,spWebUrl: 'https://gateway.sp.iss.nasa.gov/sites/GatewayTVToolChain/ETPS'
+    ,spHostUrl: 'https://ea.sp.jsc.nasa.gov'
+    ,spSiteUrl: 'https://ea.sp.jsc.nasa.gov/projects/Viper'
+    ,spWebUrl: 'https://ea.sp.jsc.nasa.gov/projects/Viper/ETPS'
     ,gseGrid1Header: 'TPS GSE Items'
     ,gseGrid2Header: 'Select from Available GSE Items using Drag And Drop'
     ,gseGrid2AccordionItemTitle: 'GSE Editor - Click to Open'

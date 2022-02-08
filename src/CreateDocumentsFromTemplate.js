@@ -28,20 +28,24 @@ import notify from 'devextreme/ui/notify';
 // import { Button } from 'devextreme-react/button';
 // import notify from "devextreme/ui/notify";
 
-export default function CreateDocumentsFromTemplate({ tpsid, TpsExeID, targetLibraryServerRelUrl }) {
+export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeID, targetLibraryServerRelUrl, SetRefreshFlag }) {
 
     const [TpsDocumentTemplateDataItem, SetTpsDocumentTemplateDataItem] = useState();
     const [DocAllocDataItem, SetDocAllocDataItem] = useState();
     const [TpsDocumentNumber, SetTpsDocumentNumber] = useState();
     const [TemplateDocs, SetTemplateDocs] = useState([]);
     const [ExecutionsData, SetExecutionsData] = useState([]);
-    const [SelectedTPSSteps, SetSelectedTPSSteps] = useState([]);
     const [PageState, SetPageState] = useState("");
     const [InitOperationStatus, SetInitOperationStatus] = useState("");
 
     useEffect(() => {
 
-        LoadPageData();
+        if (!tpsid || tpsid == "") {
+            return;
+        } else {
+
+            LoadPageData();
+        }
     }, [tpsid]);
 
     useEffect(() => {
@@ -92,7 +96,7 @@ export default function CreateDocumentsFromTemplate({ tpsid, TpsExeID, targetLib
 
         const existingDocumentsForTps = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSStepDocuments')/items?%24select=WorkingDocumentType,TPSDocumentTemplateId,TPSExecutionId,TPSStepId&%24filter=TPSId eq ${tpsid}`)
 
-
+        var wasUpdated = false;
         for (var i = 0; i < DocAllocDataItem.length; i++) {
             const x = DocAllocDataItem[i];
 
@@ -110,7 +114,7 @@ export default function CreateDocumentsFromTemplate({ tpsid, TpsExeID, targetLib
                 SetInitOperationStatus(`${i + 1} of ${DocAllocDataItem.length} - Setting Properties`)
                 await UpdateSPListItemGeneric("TPSStepDocuments", {
                     Id: copyResult.destinationSPItem.ListItemAllFields.Id
-                    , Title: relatedTemplateDoc.Title
+                    , Title: relatedTemplateDoc.Name
                     , TPSId: tpsid
                     , TPSExecutionId: TpsExeID
                     , TPSDocumentTemplateId: x.Id
@@ -118,9 +122,14 @@ export default function CreateDocumentsFromTemplate({ tpsid, TpsExeID, targetLib
                     , WorkingDocumentType: x.Type
 
                 })
+                wasUpdated = true;
                 SetInitOperationStatus(`${i + 1} of ${DocAllocDataItem.length} - Initialized`)
                 notify(`Created ${relatedTemplateDoc.Name}`, "success")
+                console.log(`Created ${relatedTemplateDoc.Name}`)
             }
+        }
+        if(wasUpdated){
+            SetRefreshFlag();
         }
         SetInitOperationStatus(`${DocAllocDataItem.length} Documents Verified`)
         setTimeout(() => {
@@ -142,13 +151,20 @@ export default function CreateDocumentsFromTemplate({ tpsid, TpsExeID, targetLib
                 </>
             )
     }
+    const getContent = () => {
+        if (showOutput) {
+            return (
+                <div className="Panel Alternate">
+                    <div>{TpsDocumentNumber} eTPS Template Documents Validator/Creator</div>
+                    <h4>{InitOperationStatus}</h4>
+                </div>
+            )
+        }
+    }
 
     return (
         <>
-            <div className="Panel Alternate">
-                <div>{TpsDocumentNumber} eTPS Template Documents Validator/Creator</div>
-                <h4>{InitOperationStatus}</h4>
-            </div>
+            {getContent()}
         </>
     )
 }

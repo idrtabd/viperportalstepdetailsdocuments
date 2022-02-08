@@ -749,3 +749,9 @@
     margin-bottom: 1em;
     margin-right: 1em;
 }
+.nonOfficeDocRow{
+    background-color: lightgray;
+}
+.longDiv{
+    height: 1600px;
+}
