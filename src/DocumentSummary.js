@@ -31,7 +31,7 @@ export default function DocumentSummary({ tpsid }) {
     const [TpsDocumentNumber, SetTpsDocumentNumber] = useState();
     const [TemplateDocs, SetTemplateDocs] = useState([]);
     const [ExecutionsData, SetExecutionsData] = useState([]);
-    const [SelectedTPSSteps, SetSelectedTPSSteps] = useState([]);
+    const [RefreshedTimestamp, SetRefreshedTimestamp] = useState();
 
     useEffect(() => {
 
@@ -69,6 +69,7 @@ export default function DocumentSummary({ tpsid }) {
     return (
         <>
             <h4>{TpsDocumentNumber} Summary</h4>
+            
             <div className="Panel Alternate">
                 <h5>Template Documents</h5>
                 {TemplateDocs && TemplateDocs.map(x =>

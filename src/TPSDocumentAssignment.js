@@ -18,6 +18,7 @@ import {
     UpdateSPListItemGeneric,
 } from "./MyUtils"
 import { Accordion, Item } from 'devextreme-react/accordion';
+import { DOC_ALLOC_STEP, DOC_ALLOC_TPS } from './ConstantStrings';
 
 export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, SetDirtyCallback, RemoveItemOnUnselect }) {
 
@@ -34,17 +35,22 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
     const [DefaultSelectedStepKey, SetDefaultSelectedStepKey] = useState();
     const [SelectedStepData, SetSelectedStepData] = useState();
 
+    //ConfigureDocumentsShowDebug
+    const runConfig = window['runConfig']
+    const ConfigureDocumentsShowDebug = runConfig && runConfig.ConfigureDocumentsShowDebug
+    const CreateDocumentsFromTemplate_SelectAStepText = runConfig && runConfig.CreateDocumentsFromTemplate_SelectAStepText
+
 
     useEffect(() => {
-        if(!tpsid){
+        if (!tpsid) {
             return;
         }
 
-        
+
         if (IsAllocationTypeStep) {
-            SetAllocationType("Step")
+            SetAllocationType(DOC_ALLOC_STEP)
         } else {
-            SetAllocationType("TPS")
+            SetAllocationType(DOC_ALLOC_TPS)
         }
         LoadPageData();
     }, [tpsid]);
@@ -59,15 +65,22 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         SetSelectedRowKeysData(null)
 
         const allStepsResult =
-            await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27Draft - TPS Steps%27)/Items?%24select=Id,Step_x0020_Procedure,Step&%24orderby=Step&%24filter=TPSLookupId eq ${tpsid}`)
+            await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('Draft - TPS Steps')/Items?$select=Id,Step_x0020_Procedure,Step&$orderby=Step&$filter=TPSLookupId eq ${tpsid}`)
         allStepsResult.forEach(x => x.Title = `${x.Step} - ${x.Step_x0020_Procedure}`)
-        SetDefaultSelectedStepKey(allStepsResult && allStepsResult.length && allStepsResult[0].Id)
-        SetSelectedStepData(AllStepsData && allStepsResult.length && allStepsResult[0])
+        SetDefaultSelectedStepKey(0)
+        //SetSelectedStepData(AllStepsData && allStepsResult.length && allStepsResult[0])
+
+        allStepsResult.splice(0, 0,
+            {
+                Id: 0
+                , Title: CreateDocumentsFromTemplate_SelectAStepText
+            })
         SetAllStepsData(allStepsResult);
+        //SetSelectedStepData(allStepsResult && allStepsResult[0])
 
         // debugger
-        const queryTemplateFolder = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27TPSDocumentTemplates%27)/items?`
-            + `%24expand=Folder&%24select=Folder%2FName,Folder%2FItemCount,DocAllocData,Id,TPSReference0Id&%24filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0120')`
+        const queryTemplateFolder = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSDocumentTemplates')/items?`
+            + `$expand=Folder&$select=Folder/Name,Folder/ServerRelativeUrl,Folder/ItemCount,DocAllocData,Id,TPSReference0Id&$filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0120')`
         const templateFolderResult = await loadSpRestCall(queryTemplateFolder, true);
         SetTPSDocumentTemplateData(templateFolderResult);
 
@@ -83,8 +96,8 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
 
         //DocAllocData
         const queryAllTemplateDocuments =
-            `${REACT_APP_RESTURL_SPWEBURL}/_api/web/GetFolderByServerRelativeUrl(%27/projects/Viper/ETPS/TPSDocumentTemplates/${templateFolderResult.Folder.Name}%27)/Files?`
-            + `%24expand=ListItemAllFields&%24select=ListItemAllFields%2FId,ListItemAllFields%2FAuthorId,ListItemAllFields%2FEditorId,Name,Title,UIVersionLabel`
+            `${REACT_APP_RESTURL_SPWEBURL}/_api/web/GetFolderByServerRelativeUrl('/projects/Viper/ETPS/TPSDocumentTemplates/${templateFolderResult.Folder.Name}')/Files?`
+            + `$expand=ListItemAllFields&$select=ListItemAllFields/Id,ListItemAllFields/AuthorId,ListItemAllFields/EditorId,Name,Title,UIVersionLabel`
         const resultsAllTemplateDocuments = await loadSpRestCall(queryAllTemplateDocuments)
         resultsAllTemplateDocuments.forEach(x => {
             x.IsSelected = false
@@ -95,16 +108,14 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         })
 
         //If IsAllocationTypeStep, Then set AssignedToStepNumber value from alocDataParsed
-        if (alocDataParsed) {
-            alocDataParsed.forEach(a=>{
-                //find template doc item by id
-                const foundTemplateDoc = resultsAllTemplateDocuments.find(x=>x.Id === a.Id && a.Type === "Step")
-                if (foundTemplateDoc){
-                    foundTemplateDoc.AssignedToStep = a.StepId
-                    foundTemplateDoc.AssignedToStepNumber = a.StepNumber
-                }
-            })
-        }
+        alocDataParsed.forEach(a => {
+            //find template doc item by id
+            const foundTemplateDoc = resultsAllTemplateDocuments.find(x => x.Id === a.Id && a.Type === "Step")
+            if (foundTemplateDoc) {
+                foundTemplateDoc.AssignedToStep = a.StepId
+                foundTemplateDoc.AssignedToStepNumber = a.StepNumber
+            }
+        })
 
         //remove selected items that are not for this type TPS vs Step
         let externallySelectedItems = [];
@@ -121,39 +132,46 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         SetTemplateDocs(resultsAllTemplateDocuments)
 
 
-        const queryAllExecutions = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPS Executions')/Items?%24select=Id, Title&%24filter=TPSLookupId eq ${tpsid}`
+        const queryAllExecutions = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPS Executions')/Items?$select=Id, Title&$filter=TPSLookupId eq ${tpsid}`
         const resultExecutions = await loadSpRestCall(queryAllExecutions);
         SetExecutionsData(resultExecutions);
     }
 
     const SelectionChanged = (e) => {
         const { selectedRowsData, currentSelectedRowKeys, currentDeselectedRowKeys } = e;
+        const tempDocs = [...TemplateDocs]
+
+
+        if (SelectedStepData && SelectedStepData.Id === 0) {
+            notify("Select a step first using the dropdown control.", "error", 6000)
+            return;
+        } else if (!SelectedStepData && currentDeselectedRowKeys.length > 0) {
+
+        }
         console.log(selectedRowsData)
         const tempDocAllocData = [...DocAllocData]
 
-        //Process Added Items
-        selectedRowsData.forEach(x => {
-            const existsItem = DocAllocData.find(d => d.Id === x.Id && d.Type == allocationType)
-            if (!existsItem) {
-                if (IsAllocationTypeStep) {
+        if (SelectedStepData) {
+            //Process Added Items
+            selectedRowsData.forEach(x => {
+                const existsItem = DocAllocData.find(d => d.Id === x.Id && d.Type == allocationType)
+                if (!existsItem) {
+                    if (IsAllocationTypeStep) {
 
-                    tempDocAllocData.push({
-                        Id: x.Id
-                        , Type: allocationType
-                        , StepId: SelectedStepData.Id
-                        , StepNumber: SelectedStepData.Step
-                    })
+                        tempDocAllocData.push({
+                            Id: x.Id
+                            , Type: allocationType
+                            , StepId: SelectedStepData.Id
+                            , StepNumber: SelectedStepData.Step
+                        })
 
-                } else {
-                    tempDocAllocData.push({ Id: x.Id, Type: allocationType })
+                    } else {
+                        tempDocAllocData.push({ Id: x.Id, Type: allocationType })
 
+                    }
                 }
-            }
-        })
+            })
 
-        if (IsAllocationTypeStep) {
-
-            const tempDocs = [...TemplateDocs]
             currentSelectedRowKeys.forEach(x => {
                 const foundDocItem = tempDocs.find(t => t.Id == x)
                 if (foundDocItem) {
@@ -162,30 +180,36 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
                     foundDocItem.AssignedToStepNumber = SelectedStepData.Step
                 }
             })
-            currentDeselectedRowKeys.forEach(x => {
-                const foundDocItem = tempDocs.find(t => t.Id == x)
-                if (foundDocItem) {
-
-                    foundDocItem.AssignedToStep = null
-                    foundDocItem.AssignedToStepNumber = null
-                }
-            })
-            SetTemplateDocs(tempDocs);
         }
+
+
+
+
+
+        currentDeselectedRowKeys.forEach(x => {
+            const foundDocItem = tempDocs.find(t => t.Id == x)
+            if (foundDocItem) {
+
+                foundDocItem.AssignedToStep = null
+                foundDocItem.AssignedToStepNumber = null
+            }
+        })
+        SetTemplateDocs(tempDocs);
+
         //Process Removed Items
         currentDeselectedRowKeys.forEach(x => {
 
-            if(RemoveItemOnUnselect){
+            if (RemoveItemOnUnselect) {
 
                 const existsItemIndex = tempDocAllocData.findIndex(d => d.Id === x && d.Type == allocationType)
                 if (existsItemIndex >= 0) {
                     tempDocAllocData.splice(existsItemIndex, 1)
                 }
-            }else if(IsAllocationTypeStep){
+            } else if (IsAllocationTypeStep) {
                 const otherCategoryKey = IsAllocationTypeStep ? "TPS" : "Step";
                 const itemRemoved = tempDocAllocData.find(d => d.Id === x && d.Type == allocationType)
                 itemRemoved.Type = otherCategoryKey;
-            }else{
+            } else {
                 console.error("No case for not RemoveItemOnUnselect and not IsAllocationTypeStep")
             }
         })
@@ -232,8 +256,8 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         if (IsAllocationTypeStep) {
 
             return (
-                <div className="dvoGridPanel Alternate">
-                    <div className="section">
+                
+                    <div className="">
 
                         <SelectBox dataSource={AllStepsData}
                             key={DefaultSelectedStepKey}
@@ -244,17 +268,7 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
                             onValueChanged={StepSelectBoxValueChanged}
                         />
                     </div>
-                </div>
-            )
-        } else {
-            return (<></>);
-        }
-    }
-    const GetSelectedStepSummary = () => {
-        if (IsAllocationTypeStep) {
-
-            return (
-                <div className="completedText">{SelectedStepData && SelectedStepData.Title.substring(0, 100) + "..."} </div>
+                
             )
         } else {
             return (<></>);
@@ -266,39 +280,69 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
             e.component.collapseItem(0)
         }
     }
+    const GetDebugAccordion = () => {
+        if (ConfigureDocumentsShowDebug) {
+            return (
+                <>
+                    <Accordion
+                        collapsible={true}
+                        multiple={false}
+                        animationDuration={500}
+                        onContentReady={accordionContentReady}
+                    >
+                        <Item title="Unavailable Items">
+                            These Items are unvailable for selection because they are already assigned to the <b>{IsAllocationTypeStep ? "TPS" : "Step"}</b> - Level
+                            <DataGrid
+                                dataSource={ItemsSelectedInOtherCategoryData}
+                                hoverStateEnabled={true}
+                                showBorders={true}
+                                allowColumnResizing={true}
+                                columnResizingMode={"widget"}
+                                columnAutoWidth={true}
+                                allowColumnReordering={true}
+                                rowAlternationEnabled={false}
+                                height="95%"
+                                id="TPSDocumentAssignmentGridNotSelectedItems"
+                                selectedRowKeys={SelectedRowKeysData}
+                                keyExpr="Id"
+                            >
+                                <ColumnChooser enabled={false} />
+                                <Column dataField="ListItemAllFields.Id" caption="Id" visible={false} />
+                                <Column dataField="Name" />
+                                <Column dataField="Title" visible={false} />
+                                <Column dataField="AssignedToStepNumber" visible={!IsAllocationTypeStep} />
+                                <Column dataField="UIVersionLabel" caption="Version" />
+                            </DataGrid>
+                        </Item>
+                        <Item title="Debug Data">
+                            <div className="dvoGridPanel">
+                                <a target="_blank" href={`https://ea.sp.jsc.nasa.gov/projects/Viper/ETPS/TPSDocumentTemplates/${TpsDocumentNumber}`}>Document Set Properties to Apply</a>
+                                <PrettyPrint jsonObj={DocAllocData} />
+                                {/* {JSON.stringify(DocAllocData)} */}
+                            </div>
+                        </Item>
+                    </Accordion>
+                </>
+            )
+        }
+    }
 
     return (
         <>
-            <div className="mainPanel">
-                <h5>Assign Template Documents to {allocationType}</h5>
-                {/* <span>{SelectedStepData.Title.substring(0,200)} </span> */}
 
-                {GetStepDropDownComponent()}
 
-                <div>
-                    <Button
-                        className="commandButton"
-                        width={110}
-                        text={`Save`}
-                        onClick={(e) => { SaveDocAllocData() }}
-                        type="success"
-                        stylingMode="contained"
-                    />
-                    <Button
-                        className="commandButton"
-                        width={110}
-                        text={`Clear All`}
-                        onClick={(e) => { ClearDocAllocData() }}
-                        type="danger"
-                        stylingMode="contained"
-                    />
+            <div className="dvoGridPanel">
+                <div className="Panel">
+                    <a target="_blank" href={`${runConfig && runConfig.spHostUrl}/${TPSDocumentTemplateData && TPSDocumentTemplateData.Folder.ServerRelativeUrl}`}>{runConfig && runConfig.AddRemoveTemplateDocumentsText}</a>
                 </div>
+                <div className="Panel">
 
-                <div className="dvoGridPanel">
+                <span className="labelSmall">Select Items to Assign to the {allocationType} - Level</span>
+                {GetStepDropDownComponent()}
+                </div>
+                {/* {GetSelectedStepSummary()} */}
 
-                    <span className="label">Select Items to Assign to the {allocationType} - Level</span>
-
-                    {GetSelectedStepSummary()}
+                <div className="Panel">
 
                     <DataGrid
                         dataSource={TemplateDocs}
@@ -316,56 +360,38 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
                         keyExpr="Id"
                     >
                         <Selection mode="multiple" />
-                        <SearchPanel visible={true} />
+                        {/* <SearchPanel visible={true} /> */}
                         <ColumnChooser enabled={false} />
-                        <Column dataField="ListItemAllFields.Id" caption="Id" visible={false} />
+                        <Column dataField="AssignedToStepNumber" caption="Step" />
                         <Column dataField="Name" />
-                        <Column dataField="AssignedToStepNumber" visible={IsAllocationTypeStep} />
+                        <Column dataField="ListItemAllFields.Id" caption="Id" visible={false} />
                         <Column dataField="Title" visible={false} />
-                        <Column dataField="UIVersionLabel" caption="Version" />
+                        <Column dataField="UIVersionLabel" caption="Version" visible={false} />
                     </DataGrid>
                 </div>
+                <div className="Panel">
 
 
-                <Accordion
-                    collapsible={true}
-                    multiple={false}
-                    animationDuration={500}
-                    onContentReady={accordionContentReady}
-                >
-                    <Item title="Unavailable Items">
-                        These Items are unvailable for selection because they are already assigned to the <b>{IsAllocationTypeStep ? "TPS" : "Step"}</b> - Level
-                        <DataGrid
-                            dataSource={ItemsSelectedInOtherCategoryData}
-                            hoverStateEnabled={true}
-                            showBorders={true}
-                            allowColumnResizing={true}
-                            columnResizingMode={"widget"}
-                            columnAutoWidth={true}
-                            allowColumnReordering={true}
-                            rowAlternationEnabled={false}
-                            height="95%"
-                            id="TPSDocumentAssignmentGridNotSelectedItems"
-                            selectedRowKeys={SelectedRowKeysData}
-                            keyExpr="Id"
-                        >
-                            <ColumnChooser enabled={false} />
-                            <Column dataField="ListItemAllFields.Id" caption="Id" visible={false} />
-                            <Column dataField="Name" />
-                            <Column dataField="Title" visible={false}/>
-                            <Column dataField="AssignedToStepNumber" visible={!IsAllocationTypeStep} />
-                            <Column dataField="UIVersionLabel" caption="Version" />
-                        </DataGrid>
-                    </Item>
-                    <Item title="Debug Data">
-                        <div className="dvoGridPanel">
-                            <a target="_blank" href={`https://ea.sp.jsc.nasa.gov/projects/Viper/ETPS/TPSDocumentTemplates/${TpsDocumentNumber}`}>Document Set Properties to Apply</a>
-                            <PrettyPrint jsonObj={DocAllocData} />
-                            {/* {JSON.stringify(DocAllocData)} */}
-                        </div>
-                    </Item>
-                </Accordion>
+                    <Button
+                        className="commandButton"
+                        width={110}
+                        text={`Save`}
+                        onClick={(e) => { SaveDocAllocData() }}
+                        type="success"
+                        stylingMode="outlined"
+                    />
+                    <Button
+                        className="commandButton"
+                        width={110}
+                        text={`Clear All`}
+                        onClick={(e) => { ClearDocAllocData() }}
+                        type="danger"
+                        stylingMode='outlined'
+                    />
+                </div>
+
             </div>
+
         </>
     )
 }

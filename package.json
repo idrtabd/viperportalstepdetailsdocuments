@@ -1,6 +1,6 @@
 {
-  "homepage": ".",
-  "name": "viperportalstepdetailsdocuments",
+  "homepage": "./etpsdocumentsreactapp",
+  "name": "etpsdocumentsreactapp",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

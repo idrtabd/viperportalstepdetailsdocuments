@@ -24,19 +24,21 @@ import {
 } from "./MyUtils"
 import dxButton from 'devextreme/ui/button';
 import notify from 'devextreme/ui/notify';
+import { Template } from 'devextreme-react';
+import { DOC_ALLOC_STEP, DOC_ALLOC_TPS } from './ConstantStrings';
 
 // import { Button } from 'devextreme-react/button';
 // import notify from "devextreme/ui/notify";
 
 export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeID, targetLibraryServerRelUrl, SetRefreshFlag }) {
 
-    const [TpsDocumentTemplateDataItem, SetTpsDocumentTemplateDataItem] = useState();
-    const [DocAllocDataItem, SetDocAllocDataItem] = useState();
-    const [TpsDocumentNumber, SetTpsDocumentNumber] = useState();
-    const [TemplateDocs, SetTemplateDocs] = useState([]);
-    const [ExecutionsData, SetExecutionsData] = useState([]);
-    const [PageState, SetPageState] = useState("");
-    const [InitOperationStatus, SetInitOperationStatus] = useState("");
+    /*1*/const [TpsDocumentTemplateDataItem, SetTpsDocumentTemplateDataItem] = useState();
+    /*2*/const [DocAllocDataItem, SetDocAllocDataItem] = useState();
+    /*3*/const [TpsDocumentNumber, SetTpsDocumentNumber] = useState();
+    /*4*/const [TemplateDocs, SetTemplateDocs] = useState([]);
+    /*5*/const [ExecutionsData, SetExecutionsData] = useState([]);
+    /*6*/const [PageState, SetPageState] = useState("");
+    /*7*/const [InitOperationStatus, SetInitOperationStatus] = useState("");
 
     useEffect(() => {
 
@@ -49,7 +51,7 @@ export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeI
     }, [tpsid]);
 
     useEffect(() => {
-        if (tpsid && TpsDocumentTemplateDataItem && TpsDocumentTemplateDataItem.Folder && ExecutionsData && ExecutionsData.Id && DocAllocDataItem && DocAllocDataItem.length) {
+        if (tpsid && TpsDocumentTemplateDataItem && TpsDocumentTemplateDataItem.Folder && ExecutionsData && ExecutionsData.Id && DocAllocDataItem && DocAllocDataItem.length >= 0) {
             SetPageState("Loaded")
             SetInitOperationStatus("Validating Working Documents")
             ValidateOrCreateDocuments();
@@ -97,19 +99,27 @@ export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeI
         const existingDocumentsForTps = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSStepDocuments')/items?%24select=WorkingDocumentType,TPSDocumentTemplateId,TPSExecutionId,TPSStepId&%24filter=TPSId eq ${tpsid}`)
 
         var wasUpdated = false;
-        for (var i = 0; i < DocAllocDataItem.length; i++) {
-            const x = DocAllocDataItem[i];
+        //for (var i = 0; i < DocAllocDataItem.length; i++) {
+        for (var i = 0; i < TemplateDocs.length; i++) {
+            //const x = DocAllocDataItem[i];
+            const tDoc = TemplateDocs[i];
+            //if docAllocStepEntry is null, then this document belongs to the entire TPS... Create it as a TPS entry, if not already exists there
+            const docAllocStepEntry = DocAllocDataItem.find(docAlloc => docAlloc.Id === tDoc.ListItemAllFields.Id);
+
+            const docTypeStepOrTPS = docAllocStepEntry ? DOC_ALLOC_STEP : DOC_ALLOC_TPS
+            const templateDocId = tDoc.ListItemAllFields.Id;
+            const stepId = docAllocStepEntry ? docAllocStepEntry.StepId : null
 
             //get the file reference, copy file to TPSStepDocuments
-            const foundExistingDocument = existingDocumentsForTps.find(e => e.WorkingDocumentType == x.Type && e.TPSDocumentTemplateId == x.Id && e.TPSExecutionId == TpsExeID)
+            const foundExistingDocument = existingDocumentsForTps.find(e => e.WorkingDocumentType == docTypeStepOrTPS && e.TPSDocumentTemplateId == templateDocId && e.TPSExecutionId == TpsExeID)
 
             if (!foundExistingDocument) {   //only create if not exists
 
-                const relatedTemplateDoc = TemplateDocs.find(t => t.ListItemAllFields.Id == x.Id)
+                const relatedTemplateDoc = tDoc; // TemplateDocs.find(t => t.ListItemAllFields.Id == docAllocStepEntry.Id)
                 const newFileName = `${targetLibraryServerRelUrl}/[${ExecutionsData.Title}] ${relatedTemplateDoc.Name}`
                 //CopySPFile(x.ServerRelativeUrl, "")
                 SetInitOperationStatus(`${i + 1} of ${DocAllocDataItem.length} - Creating`)
-                const copyResult = await CopySPFile(relatedTemplateDoc.ServerRelativeUrl, newFileName)
+                const copyResult = await CopySPFile(relatedTemplateDoc.ServerRelativeUrl, newFileName, true)
                 notify(`Creating File: ${relatedTemplateDoc.ServerRelativeUrl}   ===> ${newFileName}`)
                 SetInitOperationStatus(`${i + 1} of ${DocAllocDataItem.length} - Setting Properties`)
                 await UpdateSPListItemGeneric("TPSStepDocuments", {
@@ -117,9 +127,9 @@ export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeI
                     , Title: relatedTemplateDoc.Name
                     , TPSId: tpsid
                     , TPSExecutionId: TpsExeID
-                    , TPSDocumentTemplateId: x.Id
-                    , TPSStepId: x.StepId
-                    , WorkingDocumentType: x.Type
+                    , TPSDocumentTemplateId: templateDocId
+                    , TPSStepId: stepId
+                    , WorkingDocumentType: docTypeStepOrTPS
 
                 })
                 wasUpdated = true;
@@ -151,11 +161,18 @@ export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeI
                 </>
             )
     }
+    const getHeader=()=>{
+        if(showOutput){
+            return (
+                <div>{TpsDocumentNumber} eTPS Template Documents Validator/Creator</div>
+            )
+        }
+    }
     const getContent = () => {
         if (showOutput) {
             return (
-                <div className="Panel Alternate">
-                    <div>{TpsDocumentNumber} eTPS Template Documents Validator/Creator</div>
+                <div className="Panel SPLeftAligned">
+                    {getHeader()}
                     <h4>{InitOperationStatus}</h4>
                 </div>
             )

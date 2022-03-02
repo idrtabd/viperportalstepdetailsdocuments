@@ -166,6 +166,8 @@
 .Panel {
     border-width: 1px;
     border-style: solid;
+    border-radius: 3px;
+    border-color: darkgrey;
     padding-bottom: .5em;
     padding-top: .5em;
     padding-left: .5em;
@@ -174,6 +176,12 @@
     margin-top: .5em;
     margin-left: .5em;
     margin-right: .5em;
+}
+
+.SPLeftAligned{
+    margin-left: 0em;
+    padding-left: 0em;
+    border-color: white;
 }
 
 .Alternate {
@@ -363,6 +371,11 @@
 
 .label {
     font-weight: bold;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.labelSmall {
+    font-weight: lighter;
+    color: rgb(100, 100, 100);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 .labelInvalid {
@@ -754,4 +767,9 @@
 }
 .longDiv{
     height: 1600px;
+}
+.lockedFile{
+    color: green;
+    font-size: larger;
+    font-style: italic;
 }

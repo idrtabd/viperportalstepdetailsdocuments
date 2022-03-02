@@ -69,7 +69,9 @@ function App() {
   const [StepsKey, SetStepsKey] = useState(1);
   const [TPSKey, SetTPSKey] = useState(1);
   const [TpsDocumementsRefreshedFlag, SetTpsDocumementsRefreshedFlag] = useState(1);
-
+  const [RunConfigSeconds, SetRunConfigDataSeconds] = useState(5);
+  const [RunConfigData, SetRunConfigData] = useState();
+  const [TpsReadOnly, SetTpsReadOnly] = useState(true);
 
   const GridId = "DocumentSetFilesGrid"
   const location = useLocation();
@@ -78,9 +80,34 @@ function App() {
 
   let history = useHistory();
   useEffect(() => {
+    console.log(`TPS Key Changed to ${TPSKey}`)
+  },[TPSKey]);
+
+  useEffect(() => {
     SetTpsIdParam(getQueryStringParameterByName("TpsID"));
     SetTpsExeIDParam(getQueryStringParameterByName("TpsExeID"));
+    const runConfig = window['runConfig']
+    SetRunConfigData(runConfig);
+
+    if(runConfig && runConfig.refreshSeconds > 5){
+      SetRunConfigDataSeconds(runConfig.refreshSeconds)
+    }
+
+    pollTpsKey(runConfig.refreshSeconds);
+
+
   }, []);
+
+  const pollTpsKey=(sec)=>{
+    setTimeout(() => {
+      console.log("incrementing refresh key")
+      const newTpsKeyVal = new Date().toISOString();
+      SetTPSKey(newTpsKeyVal)
+      console.log(`Updating TPS Key to ${newTpsKeyVal}`)
+      
+        pollTpsKey(sec);      
+    }, (sec * 1000));
+  }
 
   const SetDirtyCallback = (e) => {
     if (e === "TPS") {
@@ -124,43 +151,24 @@ function App() {
           </Route> */}
 
           <Route path="/ConfigureDocuments">
-            <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} />
-            <div className="dvoGridPanel Alternate">
+            {/* <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} /> */}
+            <div className="">
               <TPSDocumentAssignment key={StepsKey} tpsid={TpsIdParam} RemoveItemOnUnselect={true} IsAllocationTypeStep={true} SetDirtyCallback={() => SetDirtyCallback("Step")} />
             </div>
-            <div><DocumentSummary tpsid={TpsIdParam} /></div>
+            {/* <div><DocumentSummary tpsid={TpsIdParam}  /></div> */}
           </Route>
 
 
           <Route path="/">
-            TpsDocumementsRefreshedFlag: {TpsDocumementsRefreshedFlag}
-            <div className="dvoGridPanel">
-              <CreateDocumentsFromTemplate showOutput={true} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} targetLibraryServerRelUrl={'/projects/Viper/ETPS/TPSStepDocuments'} SetRefreshFlag={SetRefreshFlag} />
-              <TPSExecutionSummary tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} refreshFlag={TpsDocumementsRefreshedFlag} />
+            <div className="Panel SPLeftAligned">
+              <CreateDocumentsFromTemplate showOutput={RunConfigData && RunConfigData.CreateDocumentsFromTemplateShow} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} targetLibraryServerRelUrl={'/projects/Viper/ETPS/TPSStepDocuments'} SetRefreshFlag={SetRefreshFlag} />
+              <TPSExecutionSummary TPSKey={TPSKey} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} refreshFlag={TpsDocumementsRefreshedFlag} />
             </div>
 
           </Route>
         </Switch>
       </Router>
 
-
-      <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-            <span id="step2008StepNumber">
-                Test Step Test StepTest StepTest Step
-            </span>
-            <div>
-              f dfdafd afd as
-            </div>
-            <div>
-              f dfdafd afd as
-            </div>
-            <div>
-              f dfdafd afd as
-            </div>
-            <div>
-              f dfdafd afd as
-            </div>
-            
     </React.Fragment>
 
 

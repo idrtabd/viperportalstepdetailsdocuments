@@ -38,11 +38,12 @@ import {
 // import { Button } from 'devextreme-react/button';
 // import notify from "devextreme/ui/notify";
 
-export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag}) {
+export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag, TPSKey }) {
 
+    const [RunConfigData, SetRunConfigData] = useState({});
     const [TpsStepDocumentsData, SetTpsStepDocumentsData] = useState([]);
     const [TpsStepDocuments_Step_Data, SetTpsStepDocuments_Step_Data] = useState([]);
-    const [RunConfigData, SetRunConfigData] = useState({});
+    const [RefreshedTimestamp, SetRefreshedTimestamp] = useState();
 
 
     useEffect(() => {
@@ -59,11 +60,11 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag}) {
 
             LoadPageData();
         }
-    }, [TpsExeID, refreshFlag]);
+    }, [TpsExeID, refreshFlag, TPSKey]);
 
     const LoadPageData = async () => {
 
-        const resultStepDocs = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27TPSStepDocuments%27)/Items?&$filter=TPSExecutionId eq ${TpsExeID}&$top=4000&$expand=Editor,TPSStep,File&$select=Editor/EMail,File/UIVersionLabel,TPSStep/Step,Id,Title,TPSStepId,Modified,WorkingDocumentType,File/ServerRelativeUrl,File/Name,File/LinkingUrl&$orderby=Title`)
+        const resultStepDocs = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27TPSStepDocuments%27)/Items?&$filter=TPSExecutionId eq ${TpsExeID}&$top=4000&$expand=Editor,TPSStep,File&$select=Editor/EMail,File/UIVersionLabel,TPSStep/Step,Id,Title,TPSStepId,Modified,WorkingDocumentType,LockStatus,File/ServerRelativeUrl,File/Name,File/LinkingUrl&$orderby=Title`)
         resultStepDocs.forEach(x => {
             x.Modified = new Date(x.Modified);
         })
@@ -76,42 +77,63 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag}) {
         })
         SetTpsStepDocuments_Step_Data(stepDocsData);
 
+        SetRefreshedTimestamp(new Date().toLocaleTimeString())
+
 
     }
 
-    const CellRenderDocName = (cellData) => {
+    const GetLockedSpan = (isLocked) => {
+        if (isLocked) {
+            return (
+                <div>
+                    File is Locked, Step is Signed Off
+                </div>
+            )
+        }
+    }
+    const GetIsOfficeDocumentSpan = (isOfficeDocument) => {
+        if (!isOfficeDocument) {
+            return (
+                <div>
+                    Not an office document
+                </div>
+            )
+        }
+    }
 
+    const GetDocumentLink = (cellData) => {
+        const isLocked = cellData.data.LockStatus == "Lock" || cellData.data.LockStatus == "Locked";
         const fileVer = cellData.data.File.UIVersionLabel;
 
         if (cellData.data.File.LinkingUrl != "") {
-
             return (
                 <React.Fragment>
-                    <div >
-                        <a target="_blank" href={`${cellData.data.File.LinkingUrl}`}>{cellData.text}</a>
-                    </div>
                     <div>
-                        <span>
-                            Version {fileVer}
-                        </span>
+                        <a className={isLocked ? "lockedFile" : ""} target="_blank" href={`${cellData.data.File.LinkingUrl}`}>{cellData.text}</a>
+                        {GetLockedSpan(isLocked)}
                     </div>
                 </React.Fragment>
             )
         } else {
-            //File/ServerRelativeUrl
             const relUrl = `${RunConfigData.spHostUrl}${cellData.data.File.ServerRelativeUrl}`
             return (
                 <React.Fragment>
-                    <div className="nonOfficeDocRow">
 
-                        <a target="_blank" href={`${relUrl}`}>{cellData.text} </a>
-                    </div>
-                    <div>
-                        Version {fileVer}
-                    </div>
+                    <a target="_blank" href={`${relUrl}`}>{cellData.text} </a>
+                    {GetLockedSpan(isLocked)}
                 </React.Fragment>
             )
         }
+    }
+
+    const CellRenderDocName = (cellData) => {
+        return (
+            <React.Fragment>
+                <div >
+                    {GetDocumentLink(cellData)}
+                </div>
+            </React.Fragment>
+        )
     }
     const CellRenderStepName = (cellData) => {
         if (cellData.data.TPSStep && cellData.data.TPSStep.Step) {
@@ -187,17 +209,17 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag}) {
 
     return (
         <>
-
-            <div className="">
-
+            <div className="Panel SPLeftAligned">
+                <div>Documents - TPS</div>
                 {RenderTpsWorkingDocuments()}
             </div>
 
-            <div className="">
+            <div className="Panel SPLeftAligned">
+                <div>Documents - Step-Specific</div>
                 {RenderStepWorkingDocuments()}
             </div>
 
-
+            <div className="labelSmall">Refreshed on : {RefreshedTimestamp} </div>
 
         </>
     )

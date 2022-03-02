@@ -17,4 +17,12 @@ const Index = () => {
     </React.Fragment>
   );
 };
-render(<Index />, document.getElementById("root"));
+// render(<Index />, document.getElementById("root-etpsdocumentsreactapp"));
+function loadMyReactComponent() {
+  var elementRoot = document.getElementById("root-etpsdocumentsreactapp");
+  ReactDOM.render(<Index />, elementRoot)
+}
+
+window.addEventListener("DOMContentLoaded", (event) => {
+  loadMyReactComponent();
+})

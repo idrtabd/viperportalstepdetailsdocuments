@@ -113,9 +113,9 @@ export const CopySPFile = async (sourcePath, destPath, shouldOverwrite) => {
     return new Promise(async (resolve, reject) => {
         const requestDigest = await GetRequestDigestVal()
 
-        const overwriteVal = shouldOverwrite ? "true" : "false"
+        const overwriteVal = shouldOverwrite.toString();// ? "true" : "false"
         // const copyResults = await fetch(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl('${sourcePath}')/copyTo(strNewUrl='${destPath}',bOverWrite=${overwriteVal})`
-        const url = REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(@s)/copyTo(strNewUrl=@d,bOverWrite=true)?@s='${sourcePath}'&@d='${destPath}'`
+        const url = REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFileByServerRelativeUrl(@s)/copyTo(strNewUrl=@d,bOverWrite=${overwriteVal})?@s='${sourcePath}'&@d='${destPath}'`
         const copyResults = await fetch(url
             , {
                 "method": "POST",
