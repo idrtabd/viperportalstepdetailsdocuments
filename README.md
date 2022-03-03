@@ -68,3 +68,17 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `yarn build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+### SharePoint Deployment
+
+This react build is referenced in the eTPS system from two pages:
+SiteAssets\html\tpsattachments.txt
+SiteAssets\html\executeview.aspx.txt
+These pages contain the script and link tags to the vuild export (mirroring the index.html in the react build folder)
+These pages are referenced from the attachments.aspx SharePoint page and the ExecuteView.aspx
+
+The react app Index page looks for an element with the id: root-etpsdocumentsreactapp
+Therefore, the React app can be placed within the page output (XSLT) by simply adding a DIV tag with the target ID attribute.
+This is prefereable to requiring own content editor web part.
+
+

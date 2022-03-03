@@ -46,23 +46,7 @@ import { Accordion, Item } from 'devextreme-react/accordion';
 import CreateDocumentsFromTemplate from './CreateDocumentsFromTemplate';
 import TPSExecutionSummary from './TPSExecutionSummary';
 
-// function App({ tpsid, stepid, paramExecutionid, viewPage }) {
 function App() {
-
-  // const [DocumentSetFiles, SetDocumentSetFiles] = useState([]);
-  // const [SelectedItemKeys, SetSelectedItemKeys] = useState([]);
-  // const [SelectedItems, SetSelectedItems] = useState([]);
-  // const [ExistingTpsStepDocuments, SetExistingTpsStepDocuments] = useState([]);
-  // const [GridStateEnabled, SetGridStateEnabled] = useState(true);
-  // const [TPSStepData, SetTPSStepData] = useState({});
-  // const [TPSData, SetTPSData] = useState({});
-  // const [ExecutionData, SetExecutionData] = useState();
-
-  // const [currentUser, setCurrentUser] = useState();
-  // const [currentUserGroups, setCurrentUserGroups] = useState([]);
-  // const [IsReadOnly, SetIsReadOnly] = useState(true);
-  // const [tpsReadOnlyState, settpsReadOnlyState] = useState("not set");
-
 
   const [TpsIdParam, SetTpsIdParam] = useState();
   const [TpsExeIDParam, SetTpsExeIDParam] = useState();
@@ -153,7 +137,7 @@ function App() {
           <Route path="/ConfigureDocuments">
             {/* <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} /> */}
             <div className="">
-              <TPSDocumentAssignment key={StepsKey} tpsid={TpsIdParam} RemoveItemOnUnselect={true} IsAllocationTypeStep={true} SetDirtyCallback={() => SetDirtyCallback("Step")} />
+              <TPSDocumentAssignment key={StepsKey} TpsExeID={TpsExeIDParam} tpsid={TpsIdParam} RemoveItemOnUnselect={true} IsAllocationTypeStep={true} SetDirtyCallback={() => SetDirtyCallback("Step")} />
             </div>
             {/* <div><DocumentSummary tpsid={TpsIdParam}  /></div> */}
           </Route>

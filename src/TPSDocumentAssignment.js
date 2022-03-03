@@ -16,11 +16,16 @@ import {
     REACT_APP_RESTURL_SPWEBURL,
     loadSpRestCall,
     UpdateSPListItemGeneric,
+    ETPS_Tps_Status_Accepted,
+    ETPS_Tps_Status_RoutedforApproval,
+    ETPS_Tps_Status_Closed,
+    ETPS_Tps_Status_Created,
 } from "./MyUtils"
 import { Accordion, Item } from 'devextreme-react/accordion';
 import { DOC_ALLOC_STEP, DOC_ALLOC_TPS } from './ConstantStrings';
+import TPSExecutionSummary from './TPSExecutionSummary';
 
-export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, SetDirtyCallback, RemoveItemOnUnselect }) {
+export default function TPSDocumentAssignment({ tpsid, TpsExeID, IsAllocationTypeStep, SetDirtyCallback, RemoveItemOnUnselect }) {
 
     const [TemplateDocs, SetTemplateDocs] = useState([]);
     const [TPSDocumentTemplateData, SetTPSDocumentTemplateData] = useState();
@@ -34,6 +39,10 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
     const [allocationType, SetAllocationType] = useState([]);
     const [DefaultSelectedStepKey, SetDefaultSelectedStepKey] = useState();
     const [SelectedStepData, SetSelectedStepData] = useState();
+    const [TPSItem, SetTPSItem] = useState({});
+    const [IsReadOnly, SetIsReadOnly] = useState(true);
+
+
 
     //ConfigureDocumentsShowDebug
     const runConfig = window['runConfig']
@@ -63,6 +72,13 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
 
         SetSelectedStepData(null)
         SetSelectedRowKeysData(null)
+
+        //check if readonly
+        const tpsItem = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('Draft - TPS')/Items(${tpsid})`)
+        const isTPSEditable = (tpsItem && (tpsItem.TPS_x0020_Status != ETPS_Tps_Status_Accepted && tpsItem.TPS_x0020_Status != ETPS_Tps_Status_RoutedforApproval && tpsItem.TPS_x0020_Status != ETPS_Tps_Status_Closed))
+        SetTPSItem(tpsItem)
+        SetIsReadOnly(!isTPSEditable);
+
 
         const allStepsResult =
             await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('Draft - TPS Steps')/Items?$select=Id,Step_x0020_Procedure,Step&$orderby=Step&$filter=TPSLookupId eq ${tpsid}`)
@@ -256,19 +272,19 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         if (IsAllocationTypeStep) {
 
             return (
-                
-                    <div className="">
 
-                        <SelectBox dataSource={AllStepsData}
-                            key={DefaultSelectedStepKey}
-                            displayExpr="Title"
-                            valueExpr="Id"
-                            //width="800"
-                            defaultValue={DefaultSelectedStepKey}
-                            onValueChanged={StepSelectBoxValueChanged}
-                        />
-                    </div>
-                
+                <div className="">
+
+                    <SelectBox dataSource={AllStepsData}
+                        key={DefaultSelectedStepKey}
+                        displayExpr="Title"
+                        valueExpr="Id"
+                        //width="800"
+                        defaultValue={DefaultSelectedStepKey}
+                        onValueChanged={StepSelectBoxValueChanged}
+                    />
+                </div>
+
             )
         } else {
             return (<></>);
@@ -327,71 +343,105 @@ export default function TPSDocumentAssignment({ tpsid, IsAllocationTypeStep, Set
         }
     }
 
+    const GetDataGrid = () => {
+        return (
+            <DataGrid
+                dataSource={TemplateDocs}
+                hoverStateEnabled={true}
+                showBorders={true}
+                allowColumnResizing={true}
+                columnResizingMode={"widget"}
+                columnAutoWidth={true}
+                allowColumnReordering={true}
+                rowAlternationEnabled={true}
+                height="95%"
+                onSelectionChanged={SelectionChanged}
+                id="TPSDocumentAssignmentGrid"
+                selectedRowKeys={SelectedRowKeysData}
+                keyExpr="Id"
+            >
+                <Selection mode={IsReadOnly ? "none" : "multiple"} />
+                {/* <SearchPanel visible={true} /> */}
+                <ColumnChooser enabled={true} />
+                <Column dataField="AssignedToStepNumber" caption="Step" />
+                <Column dataField="Name" />
+                <Column dataField="ListItemAllFields.Id" caption="Id" visible={false} />
+                <Column dataField="Title" visible={false} />
+                <Column dataField="UIVersionLabel" caption="Version" visible={false} />
+            </DataGrid>
+        )
+    }
+
+    const GetMainContent = () => {
+        if (IsReadOnly) {
+            return (
+                <>
+                    <span>
+                        Cannot edit template documents when TPS Status is <b>{TPSItem && TPSItem.TPS_x0020_Status}</b>
+                    </span>
+                    <div>
+                        {GetDataGrid()}
+                    </div>
+                </>
+            )
+        } else {
+            return (<>
+
+                <div className="dvoGridPanel">
+                    <div className={IsReadOnly ? "Panel" : "myHidden"}>
+                        <span className='fieldHeader'>
+                            {IsReadOnly ? "Read Only Mode" : null}
+                        </span>
+                    </div>
+                    <div className="Panel">
+                        <a target="_blank" href={`${runConfig && runConfig.spHostUrl}/${TPSDocumentTemplateData && TPSDocumentTemplateData.Folder.ServerRelativeUrl}`}>{runConfig && runConfig.AddRemoveTemplateDocumentsText}</a>
+                    </div>
+                    <div className="Panel">
+
+                        <span className="labelSmall">Select Items to Assign to the {allocationType} - Level</span>
+                        {GetStepDropDownComponent()}
+                    </div>
+                    {/* {GetSelectedStepSummary()} */}
+
+                    <div className="Panel">
+
+                        {GetDataGrid()}
+                    </div>
+                    <div className="Panel">
+
+
+                        <Button
+                            className="commandButton"
+                            className={IsReadOnly ? "myHidden" : "commandButton"}
+                            width={110}
+                            text={`Save`}
+                            onClick={(e) => { SaveDocAllocData() }}
+                            type="success"
+                            stylingMode="outlined"
+                            disabled={IsReadOnly} 
+                            
+                        />
+                        <Button
+                            className={IsReadOnly ? "myHidden" : "commandButton"}
+                            width={110}
+                            text={`Clear All`}
+                            onClick={(e) => { ClearDocAllocData() }}
+                            type="danger"
+                            stylingMode='outlined'
+                            disabled={IsReadOnly} 
+
+                        />
+                    </div>
+
+                </div>
+
+            </>)
+        }
+    }
+
     return (
         <>
-
-
-            <div className="dvoGridPanel">
-                <div className="Panel">
-                    <a target="_blank" href={`${runConfig && runConfig.spHostUrl}/${TPSDocumentTemplateData && TPSDocumentTemplateData.Folder.ServerRelativeUrl}`}>{runConfig && runConfig.AddRemoveTemplateDocumentsText}</a>
-                </div>
-                <div className="Panel">
-
-                <span className="labelSmall">Select Items to Assign to the {allocationType} - Level</span>
-                {GetStepDropDownComponent()}
-                </div>
-                {/* {GetSelectedStepSummary()} */}
-
-                <div className="Panel">
-
-                    <DataGrid
-                        dataSource={TemplateDocs}
-                        hoverStateEnabled={true}
-                        showBorders={true}
-                        allowColumnResizing={true}
-                        columnResizingMode={"widget"}
-                        columnAutoWidth={true}
-                        allowColumnReordering={true}
-                        rowAlternationEnabled={true}
-                        height="95%"
-                        onSelectionChanged={SelectionChanged}
-                        id="TPSDocumentAssignmentGrid"
-                        selectedRowKeys={SelectedRowKeysData}
-                        keyExpr="Id"
-                    >
-                        <Selection mode="multiple" />
-                        {/* <SearchPanel visible={true} /> */}
-                        <ColumnChooser enabled={false} />
-                        <Column dataField="AssignedToStepNumber" caption="Step" />
-                        <Column dataField="Name" />
-                        <Column dataField="ListItemAllFields.Id" caption="Id" visible={false} />
-                        <Column dataField="Title" visible={false} />
-                        <Column dataField="UIVersionLabel" caption="Version" visible={false} />
-                    </DataGrid>
-                </div>
-                <div className="Panel">
-
-
-                    <Button
-                        className="commandButton"
-                        width={110}
-                        text={`Save`}
-                        onClick={(e) => { SaveDocAllocData() }}
-                        type="success"
-                        stylingMode="outlined"
-                    />
-                    <Button
-                        className="commandButton"
-                        width={110}
-                        text={`Clear All`}
-                        onClick={(e) => { ClearDocAllocData() }}
-                        type="danger"
-                        stylingMode='outlined'
-                    />
-                </div>
-
-            </div>
-
+            {GetMainContent()}
         </>
     )
 }

@@ -1,5 +1,12 @@
 var sprLib = require("sprestlib");
 
+// var ETPS_Tps_Status_Created = 'Created';
+// var ETPS_Tps_Status_InCollaboration = 'In Collaboration';
+// var ETPS_Tps_Status_RoutedforApproval = 'Routed for Approval';
+// var ETPS_Tps_Status_Accepted = 'Accepted';
+// var ETPS_Tps_Status_Closed = 'Closed';
+// var ETPS_Tps_Status_Revised = 'Revised';
+
 
 export const ETPS_Tps_Status_Created = 'Created';
 export const ETPS_Tps_Status_InCollaboration = 'In Collaboration';
