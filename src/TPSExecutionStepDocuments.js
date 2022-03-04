@@ -38,7 +38,7 @@ import {
 // import { Button } from 'devextreme-react/button';
 // import notify from "devextreme/ui/notify";
 
-export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag, TPSKey }) {
+export default function TPSExecutionStepDocuments({ tpsid, stepid, TpsExeID, refreshFlag, TPSKey }) {
 
     const [RunConfigData, SetRunConfigData] = useState({});
     const [TpsStepDocumentsData, SetTpsStepDocumentsData] = useState([]);
@@ -54,7 +54,7 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag, TPSK
 
     useEffect(() => {
 
-        if (!TpsExeID || TpsExeID == "") {
+        if (!TpsExeID || TpsExeID == "" || !stepid || stepid == "") {
             return;
         } else {
 
@@ -64,7 +64,7 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag, TPSK
 
     const LoadPageData = async () => {
 
-        const resultStepDocs = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSStepDocuments')/Items?&$filter=TPSExecutionId eq ${TpsExeID}&$top=4000&$expand=Editor,TPSStep,File&$select=Editor/EMail,File/UIVersionLabel,TPSStep/Step,Id,Title,TPSStepId,Modified,WorkingDocumentType,LockStatus,File/ServerRelativeUrl,File/Name,File/LinkingUrl&$orderby=Title`)
+        const resultStepDocs = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSStepDocuments')/Items?&$filter=TPSStepId eq ${stepid} and TPSExecutionId eq ${TpsExeID}&$top=4000&$expand=Editor,TPSStep,File&$select=Editor/EMail,File/UIVersionLabel,TPSStep/Step,Id,Title,TPSStepId,Modified,WorkingDocumentType,LockStatus,File/ServerRelativeUrl,File/Name,File/LinkingUrl&$orderby=Title`)
         resultStepDocs.forEach(x => {
             x.Modified = new Date(x.Modified);
         })
@@ -147,35 +147,6 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag, TPSK
         }
     }
 
-    const RenderTpsWorkingDocuments = () => {
-        return (
-
-
-            <DataGrid
-
-                id={`TpsWorkingDocuments`}
-                dataSource={TpsStepDocumentsData}
-                hoverStateEnabled={true}
-                showBorders={true}
-                allowColumnResizing={true}
-                columnResizingMode={"widget"}
-                columnAutoWidth={true}
-                allowColumnReordering={true}
-                rowAlternationEnabled={true}
-                height="95%"
-                keyExpr="Id"
-            >
-                {/* <Scrolling mode="virtual" /> */}
-                {/* <FilterRow visible={true} /> */}
-                <Column dataField="File.Name" cellRender={CellRenderDocName} />
-
-                {/* <Column dataField="UIVersionLabel" caption="Version" /> */}
-                <Column dataField="Modified" caption="Modified" dataType="date" format="dd/MM/yyyy HH:mm:ss" />
-                <Column dataField="Editor.EMail" caption="Editor" />
-
-            </DataGrid>
-        )
-    }
     const RenderStepWorkingDocuments = () => {
         return (
 
@@ -187,7 +158,6 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag, TPSK
                 hoverStateEnabled={true}
                 showBorders={true}
                 allowColumnResizing={true}
-                
                 columnResizingMode={"widget"}
                 columnAutoWidth={true}
                 allowColumnReordering={true}
@@ -195,14 +165,13 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag, TPSK
                 height="95%"
                 keyExpr="Id"
             >
-                <ColumnChooser enabled={true} />
                 {/* <Scrolling mode="virtual" /> */}
                 {/* <FilterRow visible={true} /> */}
+                
                 <Column dataField="File.Name" cellRender={CellRenderDocName} />
-                <Column dataField="TPSStep.Step" caption="Step" cellRender={CellRenderStepName} />
-                <Column dataField="TPSStepId" visible={false} />
-                <Column dataField="Modified" caption="Modified" dataType="date" format="dd/MM/yyyy HH:mm:ss" />
-                <Column dataField="Editor.EMail" caption="Editor" />
+                <Column dataField="TPSStep.Step" cellRender={CellRenderStepName} visible={false} />
+                <Column dataField="Modified" caption="Modified" dataType="date" format="dd/MM/yyyy HH:mm:ss" visible={false} />
+                <Column dataField="Editor.EMail" caption="Editor" visible={false} />
                 {/* <Column dataField="UIVersionLabel" caption="Version" /> */}
 
             </DataGrid>
@@ -213,16 +182,10 @@ export default function TPSExecutionSummary({ tpsid, TpsExeID, refreshFlag, TPSK
     return (
         <>
             <div className="Panel SPLeftAligned">
-                <div>Documents - TPS</div>
-                {RenderTpsWorkingDocuments()}
-            </div>
-
-            <div className="Panel SPLeftAligned">
-                <div>Documents - Step-Specific</div>
                 {RenderStepWorkingDocuments()}
             </div>
+            {/* <div className="labelSmall">Refreshed on : {RefreshedTimestamp} </div> */}
 
-            <div className="labelSmall">Refreshed on : {RefreshedTimestamp} </div>
 
         </>
     )

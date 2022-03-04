@@ -85,7 +85,7 @@ export default function SelectTPSDocument({ tpsid, stepid, executionId, IsReadOn
     //get all template documents
     //join with selected step
 
-    loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27Draft%20-%20TPS%20Steps%27)/Items?%24expand=Tools,Author,Editor&%24select=*,Tools%2FTitle,Author%2FTitle,Editor%2FTitle&%24orderby=Step&%24filter=TPSLookupId eq ${tpsid}`)
+    loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('Draft%20-%20TPS%20Steps')/Items?%24expand=Tools,Author,Editor&%24select=*,Tools%2FTitle,Author%2FTitle,Editor%2FTitle&%24orderby=Step&%24filter=TPSLookupId eq ${tpsid}`)
       .then(x => {
         x.forEach(item => {
           item.ToolNames = item.Tools && item.Tools.results.join(", ")
@@ -98,14 +98,14 @@ export default function SelectTPSDocument({ tpsid, stepid, executionId, IsReadOn
         notify(`Error Loading Steps ${err}`, "error", 5000)
       })
 
-    const tpsItem = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27Draft - TPS%27)/Items(${tpsid})`, true)
+    const tpsItem = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('Draft - TPS')/Items(${tpsid})`, true)
     SetTPSData(tpsItem)
 
-    const allExistingWorkingDocuments = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27TPSStepDocuments%27)/items?%24filter=TPSId%20eq%20${tpsid} and TPSExecutionId eq ${executionId}&%24top=5000&$expand=TPSStep,TPSExecution&$select=*,TPSStep/Step,TPSExecution/Title`)
-    const templateFilesListItems = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27TPSDocumentTemplates%27)/items?%24filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId,'0x0101')&%24expand=File&%24select=File,*`)
+    const allExistingWorkingDocuments = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('TPSStepDocuments')/items?%24filter=TPSId%20eq%20${tpsid} and TPSExecutionId eq ${executionId}&%24top=5000&$expand=TPSStep,TPSExecution&$select=*,TPSStep/Step,TPSExecution/Title`)
+    const templateFilesListItems = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('TPSDocumentTemplates')/items?%24filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId,'0x0101')&%24expand=File&%24select=File,*`)
 
     //Get Template Files
-    // const templateFilesListItems = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27TPSDocumentTemplates%27)/items?%24filter=TPSReference0Id eq ${tpsid}`)
+    // const templateFilesListItems = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('TPSDocumentTemplates')/items?%24filter=TPSReference0Id eq ${tpsid}`)
     //const templateTpsFolderFileList = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFolderByServerRelativeUrl(@folder)?%40folder='%2Fprojects%2FViper%2FETPS%2FTPSDocumentTemplates%2F${tpsItem.Document_x0020_No}'&%24select=Files%2FServerRelativeUrl&%24expand=Files`)
 
     // const templateFileInfos = []

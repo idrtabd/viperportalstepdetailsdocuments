@@ -40,19 +40,19 @@ export default function DocumentSummary({ tpsid }) {
 
     const LoadPageData = async () => {
 
-        const queryTemplateFolder = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27TPSDocumentTemplates%27)/items?`
+        const queryTemplateFolder = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSDocumentTemplates')/items?`
             + `%24expand=Folder&%24select=Folder%2FName,Folder%2FItemCount,DocAllocData,Id,TPSReference0Id&%24filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0120')`
         const templateFolderResult = await loadSpRestCall(queryTemplateFolder, true);
         const folderName_tpsDocumentNumber =  templateFolderResult &&  templateFolderResult.Folder && templateFolderResult.Folder.Name;
         SetTpsDocumentNumber(folderName_tpsDocumentNumber)
 
-        // const queryTemplateDocs = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle(%27TPSDocumentTemplates%27)/items?%24filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0101')&%24expand=File&%24select=File,*`
+        // const queryTemplateDocs = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSDocumentTemplates')/items?%24filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0101')&%24expand=File&%24select=File,*`
         // const resultTemplateDocs = await loadSpRestCall(queryTemplateDocs)
         // SetTemplateDocs(resultTemplateDocs)
 
         //DocAllocData
         const queryAllTemplateDocuments =
-            `${REACT_APP_RESTURL_SPWEBURL}/_api/web/GetFolderByServerRelativeUrl(%27/projects/Viper/ETPS/TPSDocumentTemplates/${folderName_tpsDocumentNumber}%27)/Files?`
+            `${REACT_APP_RESTURL_SPWEBURL}/_api/web/GetFolderByServerRelativeUrl('/projects/Viper/ETPS/TPSDocumentTemplates/${folderName_tpsDocumentNumber}')/Files?`
             + `%24expand=ListItemAllFields&%24select=ListItemAllFields%2FId,ListItemAllFields%2FAuthorId,ListItemAllFields%2FEditorId,Name,Title,UIVersionLabel`
         const resultsAllTemplateDocuments = await loadSpRestCall(queryAllTemplateDocuments)
         SetTemplateDocs(resultsAllTemplateDocuments)

@@ -51,7 +51,7 @@ export default function StepSelecector({ tpsid, IsReadOnly, setStepsCallback }) 
         return d;
     }
     const LoadPageData = async () => {
-        const result = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27Draft - TPS Steps%27)/Items?%24select=Id,Step_x0020_Procedure,Step&%24orderby=Step&%24filter=TPSLookupId eq ${tpsid}`)
+        const result = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('Draft - TPS Steps')/Items?%24select=Id,Step_x0020_Procedure,Step&%24orderby=Step&%24filter=TPSLookupId eq ${tpsid}`)
         result.forEach(x => x.Title = `${x.Step} - ${x.Step_x0020_Procedure}`);
 
         SetTPSSteps(result);

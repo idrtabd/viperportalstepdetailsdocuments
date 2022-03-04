@@ -1,3 +1,28 @@
+# SharePoint Deployment
+
+This react build is referenced in the eTPS system from two pages:
+SiteAssets\html\tpsattachments.txt
+SiteAssets\html\executeview.aspx.txt
+
+These pages contain the script and link tags to the vuild export (mirroring the index.html in the react build folder)
+These pages are referenced from the attachments.aspx SharePoint page and the ExecuteView.aspx
+The div tags are also referenced in SitePages\TPS\Xslt\TpsExeView_Steps.xslt where there is one tag per tps step.
+A selector in the index.js react page loads the react app in each step div tag:
+document.querySelectorAll(".renderReactStepDetailsDocuments").forEach(domContainer => {
+    const dataParamstepId = domContainer.dataset.stepid
+
+    ReactDOM.render(
+      <HashRouter>
+        <Index  IsStepView={true} stepid={dataParamstepId} />
+      </HashRouter>, domContainer
+    )
+  }) 
+
+The react app Index page looks for an element with the id: root-etpsdocumentsreactapp
+Therefore, the React app can be placed within the page output (XSLT) by simply adding a DIV tag with the target ID attribute.
+This is prefereable to requiring own content editor web part.
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -69,16 +94,5 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
-### SharePoint Deployment
-
-This react build is referenced in the eTPS system from two pages:
-SiteAssets\html\tpsattachments.txt
-SiteAssets\html\executeview.aspx.txt
-These pages contain the script and link tags to the vuild export (mirroring the index.html in the react build folder)
-These pages are referenced from the attachments.aspx SharePoint page and the ExecuteView.aspx
-
-The react app Index page looks for an element with the id: root-etpsdocumentsreactapp
-Therefore, the React app can be placed within the page output (XSLT) by simply adding a DIV tag with the target ID attribute.
-This is prefereable to requiring own content editor web part.
 
 

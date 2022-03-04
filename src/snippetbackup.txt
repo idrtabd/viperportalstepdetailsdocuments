@@ -8,12 +8,12 @@ const GetGridInstance = () => {
     const tpsExecution = await LoadTPSExecutionLatest()
     SetExecutionData(tpsExecution)
     LoadTPSStep();
-    const tpsItem = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27Draft - TPS%27)/Items(${tpsid})`, true)
+    const tpsItem = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('Draft - TPS')/Items(${tpsid})`, true)
     SetTPSData(tpsItem)
     const templateFiles = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/web/GetFolderByServerRelativeUrl('/projects/Viper/ETPS/TPSDocumentTemplates/${tpsItem.Document_x0020_No}')?%24expand=Folders,Files`)
 
     await LoadListItemAllFieldsFromTemplateFiles(templateFiles && templateFiles.Files && templateFiles.Files.results);
-    const allWorkingDocuments = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27TPSStepDocuments%27)/items?%24filter=TPSId%20eq%20${tpsid} and TPSExecutionId eq ${paramExecutionid}&%24top=5000&$expand=TPSStep,TPSExecution&$select=*,TPSStep/Step,TPSExecution/Title`)
+    const allWorkingDocuments = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('TPSStepDocuments')/items?%24filter=TPSId%20eq%20${tpsid} and TPSExecutionId eq ${paramExecutionid}&%24top=5000&$expand=TPSStep,TPSExecution&$select=*,TPSStep/Step,TPSExecution/Title`)
 
 
     templateFiles && templateFiles.Files && templateFiles.Files.results.forEach(x => {
@@ -56,7 +56,7 @@ const GetGridInstance = () => {
 
   const LoadTPSExecutionLatest = () => {
 
-    return loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/lists/GetByTitle(%27TPS%20Executions%27)/items?%24filter=TPSLookupId eq ${tpsid}&%24orderby=ID desc&%24top=1`, true)
+    return loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/lists/GetByTitle('TPS%20Executions')/items?%24filter=TPSLookupId eq ${tpsid}&%24orderby=ID desc&%24top=1`, true)
 
   }
 
@@ -66,7 +66,7 @@ const GetGridInstance = () => {
 
       if (!templateFiles) { resolve() }
       for (let i = 0; i < templateFiles.length; i++) {
-        const res = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Web/GetFileByServerRelativeUrl(%27${templateFiles[i].ServerRelativeUrl}%27)/ListItemAllFields?%24select=Id,TPSReference0Id`, true)
+        const res = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Web/GetFileByServerRelativeUrl('${templateFiles[i].ServerRelativeUrl}')/ListItemAllFields?%24select=Id,TPSReference0Id`, true)
         templateFiles[i].ListItemAllFields = res;
         templateFiles[i].Id = res.Id;
       }
@@ -78,7 +78,7 @@ const GetGridInstance = () => {
 
 
   const LoadTPSStep = async () => {
-    const tpsStepData = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27Draft - TPS Steps%27)/Items?%24filter=Id eq ${stepid}`, true)
+    const tpsStepData = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('Draft - TPS Steps')/Items?%24filter=Id eq ${stepid}`, true)
     SetTPSStepData(tpsStepData)
   }
 
@@ -220,7 +220,7 @@ const GetGridInstance = () => {
   }
 
   const LoadExistingFileRefsFromTPSStepDocuments = async (templateFiles, executionId) => {
-    const existingItems = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27TPSStepDocuments%27)/Items?%24select=TPSDocumentTemplateId,Id,TPSId,TPSStepId,TPSExecutionId,Title&%24filter=TPSId eq ${tpsid} and TPSStepId eq ${stepid} and TPSExecutionId eq ${executionId}`)
+    const existingItems = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('TPSStepDocuments')/Items?%24select=TPSDocumentTemplateId,Id,TPSId,TPSStepId,TPSExecutionId,Title&%24filter=TPSId eq ${tpsid} and TPSStepId eq ${stepid} and TPSExecutionId eq ${executionId}`)
     const matches = []
     SetExistingTpsStepDocuments(existingItems)
     existingItems.forEach(x => {

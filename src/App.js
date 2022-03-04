@@ -45,8 +45,9 @@ import TPSDocumentAssignment from './TPSDocumentAssignment';
 import { Accordion, Item } from 'devextreme-react/accordion';
 import CreateDocumentsFromTemplate from './CreateDocumentsFromTemplate';
 import TPSExecutionSummary from './TPSExecutionSummary';
+import TPSExecutionStepDocuments from './TPSExecutionStepDocuments';
 
-function App() {
+function App({ IsStepView, stepid }) {
 
   const [TpsIdParam, SetTpsIdParam] = useState();
   const [TpsExeIDParam, SetTpsExeIDParam] = useState();
@@ -65,7 +66,7 @@ function App() {
   let history = useHistory();
   useEffect(() => {
     console.log(`TPS Key Changed to ${TPSKey}`)
-  },[TPSKey]);
+  }, [TPSKey]);
 
   useEffect(() => {
     SetTpsIdParam(getQueryStringParameterByName("TpsID"));
@@ -73,7 +74,7 @@ function App() {
     const runConfig = window['runConfig']
     SetRunConfigData(runConfig);
 
-    if(runConfig && runConfig.refreshSeconds > 5){
+    if (runConfig && runConfig.refreshSeconds > 5) {
       SetRunConfigDataSeconds(runConfig.refreshSeconds)
     }
 
@@ -82,14 +83,14 @@ function App() {
 
   }, []);
 
-  const pollTpsKey=(sec)=>{
+  const pollTpsKey = (sec) => {
     setTimeout(() => {
       console.log("incrementing refresh key")
       const newTpsKeyVal = new Date().toISOString();
       SetTPSKey(newTpsKeyVal)
       console.log(`Updating TPS Key to ${newTpsKeyVal}`)
-      
-        pollTpsKey(sec);      
+
+      pollTpsKey(sec);
     }, (sec * 1000));
   }
 
@@ -108,32 +109,26 @@ function App() {
   if (!TpsIdParam) {
     return (<div>Missing TPSId Query String Parameter</div>)
   }
+
+  const GetRootPath = () => {
+    if (IsStepView) {
+      return (
+        <TPSExecutionStepDocuments stepid={stepid} TPSKey={TPSKey} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} refreshFlag={TpsDocumementsRefreshedFlag} />
+      )
+    } else {
+      return (
+        <div className="Panel SPLeftAligned">
+          <CreateDocumentsFromTemplate showOutput={RunConfigData && RunConfigData.CreateDocumentsFromTemplateShow} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} targetLibraryServerRelUrl={'/projects/Viper/ETPS/TPSStepDocuments'} SetRefreshFlag={SetRefreshFlag} />
+          <TPSExecutionSummary TPSKey={TPSKey} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} refreshFlag={TpsDocumementsRefreshedFlag} />
+        </div>
+      )
+    }
+  }
+
   return (
     <React.Fragment>
       <Router>
         <Switch>
-          {/* <Route path="/StepExecution">
-            <StepDocumentsExecuteView
-
-              executionId={paramExecutionid}
-              stepid={stepid}
-              tpsid={tpsid}
-              IsReadOnly={IsReadOnly}
-            />
-          </Route>
-          <Route path="/SelectTPSDocuments">
-            <SelectTPSDocument
-              DocumentSetFiles={DocumentSetFiles}
-              executionId={paramExecutionid}
-              stepid={stepid}
-              tpsid={tpsid}
-              IsReadOnly={IsReadOnly}
-            />
-          </Route> */}
-          {/* <Route path="/NotesEditor">
-            <StepExecutionNotesEditor notesText="fdf dfjdkslafjdsal;f jdasfldjafk;"/>
-          </Route> */}
-
           <Route path="/ConfigureDocuments">
             {/* <TPSDocumentAssignment key={TPSKey} RemoveItemOnUnselect={true} tpsid={TpsIdParam} IsAllocationTypeStep={false} SetDirtyCallback={() => SetDirtyCallback("TPS")} /> */}
             <div className="">
@@ -144,11 +139,7 @@ function App() {
 
 
           <Route path="/">
-            <div className="Panel SPLeftAligned">
-              <CreateDocumentsFromTemplate showOutput={RunConfigData && RunConfigData.CreateDocumentsFromTemplateShow} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} targetLibraryServerRelUrl={'/projects/Viper/ETPS/TPSStepDocuments'} SetRefreshFlag={SetRefreshFlag} />
-              <TPSExecutionSummary TPSKey={TPSKey} tpsid={TpsIdParam} TpsExeID={TpsExeIDParam} refreshFlag={TpsDocumementsRefreshedFlag} />
-            </div>
-
+            {GetRootPath()}
           </Route>
         </Switch>
       </Router>

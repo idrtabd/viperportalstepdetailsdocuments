@@ -53,7 +53,7 @@ export default function StepDocumentsExecuteView({ tpsid, stepid, tpsdocumentnum
     }
 
     const LoadExistingFileRefsFromTPSStepDocuments = async (executionId) => {
-        const existingItems = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle(%27TPSStepDocuments%27)/Items?$expand=Author,File&%24select=Author/Title,Author/EMail,File,TPSDocumentTemplateId,Id,TPSId,TPSStepId,TPSExecutionId,Title,Modified&%24filter=TPSId eq ${tpsid} and TPSStepId eq ${stepid} and TPSExecutionId eq ${executionId}`)
+        const existingItems = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('TPSStepDocuments')/Items?$expand=Author,File&%24select=Author/Title,Author/EMail,File,TPSDocumentTemplateId,Id,TPSId,TPSStepId,TPSExecutionId,Title,Modified&%24filter=TPSId eq ${tpsid} and TPSStepId eq ${stepid} and TPSExecutionId eq ${executionId}`)
         SetExistingTpsStepDocuments(existingItems)
     }
 
