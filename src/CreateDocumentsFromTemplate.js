@@ -39,7 +39,8 @@ export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeI
     /*5*/const [ExecutionsData, SetExecutionsData] = useState([]);
     /*6*/const [PageState, SetPageState] = useState("");
     /*7*/const [InitOperationStatus, SetInitOperationStatus] = useState("");
-
+    /*8*/const [DraftTpsData, SetDraftTpsData] = useState();
+    
     useEffect(() => {
 
         if (!tpsid || tpsid == "") {
@@ -51,14 +52,17 @@ export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeI
     }, [tpsid]);
 
     useEffect(() => {
-        if (tpsid && TpsDocumentTemplateDataItem && TpsDocumentTemplateDataItem.Folder && ExecutionsData && ExecutionsData.Id && DocAllocDataItem && DocAllocDataItem.length >= 0) {
+        if (tpsid && DraftTpsData && TpsDocumentTemplateDataItem && TpsDocumentTemplateDataItem.Folder && ExecutionsData && ExecutionsData.Id && DocAllocDataItem && DocAllocDataItem.length >= 0) {
             SetPageState("Loaded")
             SetInitOperationStatus("Validating Working Documents")
             ValidateOrCreateDocuments();
         }
-    }, [tpsid, TpsDocumentTemplateDataItem, ExecutionsData, DocAllocDataItem]);
+    }, [DraftTpsData, tpsid, TpsDocumentTemplateDataItem, ExecutionsData, DocAllocDataItem]);
 
     const LoadPageData = async () => {
+
+        const tpsItem = await loadSpRestCall(REACT_APP_RESTURL_SPWEBURL + `/_api/Lists/GetByTitle('Draft - TPS')/Items(${tpsid})`, true)
+        SetDraftTpsData(tpsItem)
 
         const queryTemplateFolder = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSDocumentTemplates')/items?`
             + `$expand=Folder&$select=Folder%2FName,Folder%2FItemCount,DocAllocData,Id,TPSReference0Id&$filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0120')`
@@ -96,7 +100,12 @@ export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeI
             return;
         }
 
-        const existingDocumentsForTps = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSStepDocuments')/items?%24select=WorkingDocumentType,TPSDocumentTemplateId,TPSExecutionId,TPSStepId&%24filter=TPSId eq ${tpsid}`)
+        if(DraftTpsData && DraftTpsData.TPS_x0020_Status != ETPS_Tps_Status_Accepted){
+            console.log(`Cannot ValidateOrCreateDocuments until status is Accepted, current status is ${DraftTpsData && DraftTpsData.TPS_x0020_Status}`)
+            return;
+        }
+
+        const existingDocumentsForTps = await loadSpRestCall(`${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSStepDocuments')/items?%24select=TPSId,WorkingDocumentType,TPSDocumentTemplateId,TPSExecutionId,TPSStepId&%24filter=TPSId eq ${tpsid} and TPSExecutionId eq ${TpsExeID}&$top=5000`)
 
         var wasUpdated = false;
         //for (var i = 0; i < DocAllocDataItem.length; i++) {
@@ -113,7 +122,10 @@ export default function CreateDocumentsFromTemplate({ showOutput, tpsid, TpsExeI
             //get the file reference, copy file to TPSStepDocuments
             const foundExistingDocument = existingDocumentsForTps.find(e => e.WorkingDocumentType == docTypeStepOrTPS && e.TPSDocumentTemplateId == templateDocId && e.TPSExecutionId == TpsExeID)
 
+
             if (!foundExistingDocument) {   //only create if not exists
+
+                debugger
 
                 const relatedTemplateDoc = tDoc; // TemplateDocs.find(t => t.ListItemAllFields.Id == docAllocStepEntry.Id)
                 const newFileName = `${targetLibraryServerRelUrl}/[${ExecutionsData.Title}] ${relatedTemplateDoc.Name}`

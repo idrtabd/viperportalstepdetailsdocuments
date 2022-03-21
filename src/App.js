@@ -127,6 +127,8 @@ function App({ IsStepView, stepid }) {
 
   return (
     <React.Fragment>
+      <div className='debug'>Is Step View: {IsStepView && IsStepView.toString()}</div>
+      <div className='debug'>Step ID: {stepid}</div>
       <Router>
         <Switch>
           <Route path="/ConfigureDocuments">

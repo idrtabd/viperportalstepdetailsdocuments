@@ -96,7 +96,6 @@ export default function StepSelecector({ tpsid, IsReadOnly, setStepsCallback }) 
     }
     function onRemove(e, gridType) {
         return
-        debugger
         const steps = GetStateData()[e.fromData];
         const setState = GetSetStateData().get(e.toData);
         setState({

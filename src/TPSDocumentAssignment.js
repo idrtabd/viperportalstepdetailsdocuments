@@ -92,9 +92,7 @@ export default function TPSDocumentAssignment({ tpsid, TpsExeID, IsAllocationTyp
                 , Title: CreateDocumentsFromTemplate_SelectAStepText
             })
         SetAllStepsData(allStepsResult);
-        //SetSelectedStepData(allStepsResult && allStepsResult[0])
 
-        // debugger
         const queryTemplateFolder = `${REACT_APP_RESTURL_SPWEBURL}/_api/Lists/GetByTitle('TPSDocumentTemplates')/items?`
             + `$expand=Folder&$select=Folder/Name,Folder/ServerRelativeUrl,Folder/ItemCount,DocAllocData,Id,TPSReference0Id&$filter=TPSReference0Id eq ${tpsid} and startswith(ContentTypeId, '0x0120')`
         const templateFolderResult = await loadSpRestCall(queryTemplateFolder, true);
@@ -411,7 +409,6 @@ export default function TPSDocumentAssignment({ tpsid, TpsExeID, IsAllocationTyp
 
 
                         <Button
-                            className="commandButton"
                             className={IsReadOnly ? "myHidden" : "commandButton"}
                             width={110}
                             text={`Save`}

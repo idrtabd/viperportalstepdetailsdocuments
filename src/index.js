@@ -17,16 +17,18 @@ const Index = ({IsStepView, stepid}) => {
     </React.Fragment>
   );
 };
-// render(<Index />, document.getElementById("root-etpsdocumentsreactapp"));
+
 function loadMainReactComponent() {
   var elementRoot = document.getElementById("root-etpsdocumentsreactapp");
-  ReactDOM.render(<Index />, elementRoot)
+  if(elementRoot){
+
+    ReactDOM.render(<Index />, elementRoot)
+  }
 }
 
 function loadReactComponentPerStepDiv() {
   document.querySelectorAll(".renderReactStepDetailsDocuments").forEach(domContainer => {
     const dataParamstepId = domContainer.dataset.stepid
-
     ReactDOM.render(
       <HashRouter>
         <Index  IsStepView={true} stepid={dataParamstepId} />

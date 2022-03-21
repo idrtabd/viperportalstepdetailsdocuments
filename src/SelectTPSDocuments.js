@@ -312,7 +312,6 @@ export default function SelectTPSDocument({ tpsid, stepid, executionId, IsReadOn
 
   const dataGrid_onSelectionChanged = async (e) => {
     // console.log("dataGrid_onSelectionChanged")
-    debugger
     console.log("Selected: ")
     console.log(e.currentSelectedRowKeys)
     console.log("DESelected: ")
@@ -444,7 +443,6 @@ export default function SelectTPSDocument({ tpsid, stepid, executionId, IsReadOn
 
   const StepSelectorCallback=(SelectedTPSSteps)=>{
       //set selected Steps for selected document id
-      debugger;
       const xx = DocumentSetFilesSelectedToStep
       const relatedTpsStepDoc = TPSStepDocuments.find(x => x.TPSDocumentTemplateId == SelectedDocumentId)
       SetpopupVisible(false);
